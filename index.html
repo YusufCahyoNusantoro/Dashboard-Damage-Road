@@ -963,6 +963,18 @@
   .bk-row.warn { background: var(--estimate-bg); color: #7a3e06; }
   .bk-acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   @media screen and (max-width: 640px) { .bk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bk-acts > * { flex: 1; justify-content: center; } }
+  #rsFileTable tr.rs-frow { cursor: pointer; }
+  #rsFileTable tr.rs-frow:hover td { background: var(--accent-bg); }
+  #rsFileTable tr.rs-frow:hover .rs-fname span:last-child { color: var(--accent); text-decoration: underline; }
+  #rsFileTable tr.rs-frow:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  /* Gambar layar penuh */
+  body.rs-full { overflow: hidden; }
+  .rs-viewcard.is-full { position: fixed; inset: 0; z-index: 95; border-radius: 0; margin: 0; padding: 10px 14px 8px; display: flex; flex-direction: column; background: var(--bg-card); }
+  .rs-viewcard.is-full .rs-canvas { flex: 1 1 auto; height: auto; min-height: 0; }
+  .rs-viewcard.is-full #rsViewNote, .rs-viewcard.is-full .cogo-note { margin: 6px 0 0; }
+  .rs-viewcard.is-full .rs-viewbar { margin-bottom: 8px; }
+  body.rs-full .sidebar, body.rs-full .sidebar-backdrop, body.rs-full .sidebar-toggle { visibility: hidden; }
+  #rsFull.on { background: var(--ink-900); color: #fff; border-color: var(--ink-900); }
 </style>
 </head>
 <body>
@@ -1975,6 +1987,8 @@
           <div class="rs-vtools">
             <button type="button" class="btn-ghost" id="rsFit" title="Tampilkan seluruh gambar">&#9974; Pas layar</button>
             <button type="button" class="btn-ghost" id="rsAddPin" aria-pressed="false">&#128205; Tambah pin</button>
+            <button type="button" class="btn-ghost" id="rsNewIssue" title="Create issue di ruas ini">+ Create issue</button>
+            <button type="button" class="btn-ghost" id="rsFull" aria-pressed="false" title="Layar penuh (F)">&#x26F6; Layar penuh</button>
             <button type="button" class="btn-ghost" id="rsPtsToggle" hidden>Titik survey</button>
           </div>
           <div class="rs-legend"><span><i class="lg r"></i>Ringan</span><span><i class="lg s"></i>Sedang</span><span><i class="lg b"></i>Berat</span></div>
@@ -6347,6 +6361,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     document.title = p.kode + ' \u2014 Damage Road';
   }
   function rsSetTab(t) {
+    if (t !== 'viewer' && document.body.classList.contains('rs-full')) { try { rsSetFull(false); } catch (e) { /* abaikan */ } }
     rs.tab = t;
     document.querySelectorAll('.rs-tab').forEach(b => b.classList.toggle('active', b.dataset.t === t));
     document.querySelectorAll('.rs-panel').forEach(p => { p.hidden = p.dataset.p !== t; });
@@ -6371,7 +6386,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('rsFileBody').innerHTML = list.map(f => {
       const cur = f.versions[f.versions.length - 1];
       const isDwg = /\.dwg$/i.test(f.name);
-      return '<tr><td class="rs-fname"><span class="rs-ext ' + (isDwg ? 'dwg' : '') + '">' + esc((f.name.split('.').pop() || '').toUpperCase().slice(0, 4)) + '</span><span>' + esc(f.name) + '</span></td>' +
+      const isImg = /^image\//.test(cur.type || '') || /\.(png|jpe?g|gif|webp)$/i.test(f.name), isPdf = /\.pdf$/i.test(f.name);
+      const act = isDwg ? 'Klik untuk membuka gambar' : f.folder === 'Survey (PNEZD)' ? 'Klik untuk melihat titik survey di gambar' : (isImg || isPdf) ? 'Klik untuk membuka file' : 'Klik untuk download';
+      return '<tr class="rs-frow" data-frow="' + esc(f.id) + '" tabindex="0" title="' + act + '"><td class="rs-fname"><span class="rs-ext ' + (isDwg ? 'dwg' : '') + '">' + esc((f.name.split('.').pop() || '').toUpperCase().slice(0, 4)) + '</span><span>' + esc(f.name) + '</span></td>' +
         '<td><button type="button" class="rs-vchip" data-hist="' + esc(f.id) + '" title="Riwayat versi">V' + cur.v + '</button></td>' +
         '<td class="num">' + fmtSize(cur.size) + '</td><td style="white-space:nowrap;">' + fmtWaktu(cur.date) + '</td>' +
         '<td style="font-size:12px; color:var(--ink-500);">' + (cur.dwg ? cur.dwg.n + ' area kerusakan terbaca' + (cur.dwg.cogo ? ' \u00b7 ' + cur.dwg.cogo + ' titik Civil 3D (belum terbaca)' : '') : cur.pnezd ? cur.pnezd + ' titik survey' : (esc(cur.note) || '\u2013')) + '</td>' +
@@ -6379,6 +6396,31 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     }).join('') || '<tr><td colspan="6" style="text-align:center; color:var(--ink-400); padding:26px 8px;">Folder ini masih kosong. Klik <b>Upload</b>.</td></tr>';
   }
   if ($('rsFolders')) $('rsFolders').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { rs.folder = b.dataset.f; rsRenderFiles(); } });
+  // satu baris file bisa diklik: DWG -> buka gambar, PNEZD -> lihat titik di gambar, foto/PDF -> buka, lainnya -> download
+  async function rsOpenFileRow(id) {
+    const f = rs.files.find(x => x.id === id); if (!f) return;
+    const cur = f.versions[f.versions.length - 1];
+    if (/\.dwg$/i.test(f.name)) { rs.viewFile = f.id; rs.viewV = null; rsSetTab('viewer'); return; }
+    if (f.folder === 'Survey (PNEZD)') {
+      const dwg = rs.files.find(x => /\.dwg$/i.test(x.name));
+      if (!dwg) { uiAlert('Titik survey ditampilkan di atas gambar DWG. Upload file DWG ruas ini dulu di folder Civil 3D.'); return; }
+      rs.viewFile = dwg.id; rs.viewV = null; rsSetTab('viewer'); return;
+    }
+    const isImg = /^image\//.test(cur.type || '') || /\.(png|jpe?g|gif|webp)$/i.test(f.name), isPdf = /\.pdf$/i.test(f.name);
+    if (isImg || isPdf) {
+      const b = await idbGet('blobs', cur.blobId); if (!b) { rsStatus('File tidak ditemukan di penyimpanan browser.', false); return; }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(b.blob); a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); setTimeout(() => { a.remove(); }, 1000); return;
+    }
+    rsDownload(f.id, cur.v);
+  }
+  if ($('rsFileBody')) {
+    $('rsFileBody').addEventListener('click', e => {
+      if (e.target.closest('button, a, input, label')) return;   // tombol V1, menu ⋮, dll. tetap jalan sendiri
+      const tr = e.target.closest('tr[data-frow]'); if (tr) rsOpenFileRow(tr.dataset.frow);
+    });
+    $('rsFileBody').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-frow]'); if (tr && e.target === tr && e.key === 'Enter') { e.preventDefault(); rsOpenFileRow(tr.dataset.frow); } });
+  }
   function rsStatus(msg, ok) { const el = $('rsStatus'); el.className = 'ds-status ' + (ok ? 'ok' : 'err'); el.textContent = msg; clearTimeout(rsStatus._t); if (ok !== null) rsStatus._t = setTimeout(() => { el.textContent = ''; }, 12000); }
   if ($('rsUpload')) $('rsUpload').addEventListener('change', async e => {
     const files = Array.from(e.target.files || []); e.target.value = '';
@@ -6602,6 +6644,32 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     rsApplyView();
   }
   if ($('rsFit')) $('rsFit').addEventListener('click', rsFit);
+  // ---------- layar penuh untuk gambar ----------
+  // Yang dibuat penuh adalah seluruh halaman (lalu kartu gambar menutupi layar), supaya form Create issue,
+  // detail issue, dan dialog lain tetap bisa muncul di atas gambar.
+  function rsIsFull() { return document.body.classList.contains('rs-full'); }
+  function rsSetFull(on) {
+    const card = document.querySelector('.rs-viewcard'); if (!card) return;
+    document.body.classList.toggle('rs-full', on);
+    card.classList.toggle('is-full', on);
+    const b = $('rsFull'); if (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.innerHTML = on ? '&#x2715; Keluar layar penuh' : '&#x26F6; Layar penuh'; b.classList.toggle('on', on); }
+    try {
+      const el = document.documentElement;
+      if (on && !document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(() => { /* tetap pakai mode penuh di jendela */ });
+      if (!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    } catch (e) { /* abaikan */ }
+    setTimeout(() => { rsApplyView(); }, 60); setTimeout(() => { rsApplyView(); }, 350);
+  }
+  if ($('rsFull')) $('rsFull').addEventListener('click', () => rsSetFull(!rsIsFull()));
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && rsIsFull()) rsSetFull(false); });
+  document.addEventListener('keydown', e => {
+    const tag = ((document.activeElement || {}).tagName || '');
+    if (/INPUT|SELECT|TEXTAREA/.test(tag) || document.querySelector('.v2-modal:not([hidden])')) return;
+    if (rs.tab !== 'viewer' || document.body.dataset.activePage !== 'ruas') return;
+    if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey) { e.preventDefault(); rsSetFull(!rsIsFull()); }
+    if (e.key === 'Escape' && rsIsFull() && !rs.pinMode) rsSetFull(false);
+  });
+  if ($('rsNewIssue')) $('rsNewIssue').addEventListener('click', () => isOpenForm(null));
   function rsApplyView() {
     if (!rs.view) return;
     const r = svg.getBoundingClientRect();
