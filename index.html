@@ -975,6 +975,72 @@
   .rs-viewcard.is-full .rs-viewbar { margin-bottom: 8px; }
   body.rs-full .sidebar, body.rs-full .sidebar-backdrop, body.rs-full .sidebar-toggle { visibility: hidden; }
   #rsFull.on { background: var(--ink-900); color: #fff; border-color: var(--ink-900); }
+  /* kode kerusakan manual & data otomatis */
+  .is-codein label span { font-size: 12px; font-weight: 600; color: var(--ink-700); }
+  .is-codeline { display: flex; gap: 8px; margin: 5px 0 3px; }
+  .is-codeline input { flex: 1; font-family: 'IBM Plex Mono', monospace; font-size: 14px; text-transform: uppercase; border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }
+  .is-codeline .btn-ghost { white-space: nowrap; font-size: 12px; }
+  .is-codeline .btn-ghost b { font-family: 'IBM Plex Mono', monospace; margin-left: 4px; }
+  .is-auto { background: var(--bg-sunken); border-radius: 10px; padding: 10px 12px; font-size: 12px; }
+  .auto-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 6px 0; }
+  .auto-grid div { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+  .auto-grid span { display: block; font-size: 11px; color: var(--ink-500); }
+  .ext-wait { font-size: 11.5px; font-style: italic; color: var(--ink-400); }
+  .auto-tag { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #0f766e; background: #e0f2f1; border-radius: 4px; padding: 1px 5px; margin-left: 4px; }
+  .is-spktop { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; border-radius: 10px; padding: 10px 14px; margin: 10px 0 2px; font-size: 13px; }
+  .is-spktop.ok { background: #e8eefd; } .is-spktop.none { background: var(--estimate-bg); }
+  .is-spktop .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-500); }
+  .is-spktop b { font-family: 'IBM Plex Mono', monospace; font-size: 17px; color: var(--ink-900); }
+  .is-spktop.ok b { color: var(--accent); }
+  .is-spktop .src { font-size: 11.5px; color: var(--ink-500); }
+  .is-spktop .meta { font-size: 12px; color: var(--ink-700); flex-basis: 100%; }
+  @media screen and (max-width: 640px) { .auto-grid { grid-template-columns: 1fr; } }
+  #rsDmg path { cursor: pointer; }
+  #rsDmg path:hover { fill-opacity: 1; stroke-width: 2px; }
+  /* Pratinjau file & banding versi */
+  .fv-modal { padding: 12px; }
+  .fv-box { width: min(1400px, 98vw) !important; height: 94vh; max-height: 94vh; display: flex; flex-direction: column; padding: 14px 18px; overflow: hidden; }
+  .fv-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .fv-title { min-width: 0; flex: 1 1 280px; } .fv-title h3 { margin: 0; font-size: 16px; overflow-wrap: anywhere; } .fv-title .sub { margin: 2px 0 0; font-size: 12px; color: var(--ink-500); }
+  .fv-ctrl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .fv-ctrl label { font-size: 12px; font-weight: 600; color: var(--ink-500); display: flex; align-items: center; gap: 6px; }
+  .fv-ctrl select { font-family: inherit; font-size: 12.5px; border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 8px; background: #fff; max-width: 260px; }
+  .fv-ctrl select[hidden], .fv-ctrl .segment-group[hidden] { display: none; }
+  .fv-sum { margin: 10px 0 0; font-size: 12.5px; background: var(--bg-sunken); border-radius: 8px; padding: 7px 12px; }
+  .fv-sum[hidden] { display: none; }
+  .fv-add { color: #15803d; } .fv-del { color: var(--danger); }
+  .fv-body { flex: 1 1 auto; min-height: 0; margin-top: 10px; overflow: auto; position: relative; }
+  .fv-loading, .fv-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--ink-500); font-size: 13px; text-align: center; }
+  .fv-empty b { color: var(--ink-900); }
+  .fv-panes { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; height: 100%; }
+  .fv-pane { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .fv-pane-h { font-size: 12px; padding: 7px 10px; background: var(--bg-sunken); border-bottom: 1px solid var(--line); }
+  .fv-img { flex: 1; display: flex; align-items: center; justify-content: center; background: #f1f5f9; min-height: 0; overflow: auto; }
+  .fv-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .fv-pdf iframe { flex: 1; width: 100%; border: 0; min-height: 70vh; }
+  .fv-scroll { overflow: auto; flex: 1; min-height: 0; }
+  .fv-full { height: 100%; border: 1px solid var(--line); border-radius: 10px; }
+  .fv-sheet { border-collapse: collapse; font-size: 12px; }
+  .fv-sheet th { position: sticky; left: 0; background: var(--bg-sunken); color: var(--ink-400); font-weight: 600; padding: 3px 8px; border: 1px solid var(--line); text-align: right; }
+  .fv-sheet td { border: 1px solid var(--line); padding: 3px 8px; white-space: nowrap; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+  .fv-sheet td.fv-chg { background: #fef3c7; font-weight: 600; }
+  .fv-pre { margin: 0; padding: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; white-space: pre-wrap; overflow: auto; }
+  .fv-doc { max-width: 860px; margin: 0 auto; padding: 18px 24px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px; line-height: 1.6; }
+  .fv-doc img { max-width: 100%; } .fv-doc table { border-collapse: collapse; } .fv-doc td, .fv-doc th { border: 1px solid var(--line); padding: 4px 8px; }
+  .fv-diff { font-family: 'IBM Plex Mono', monospace; font-size: 12px; border: 1px solid var(--line); border-radius: 10px; overflow: auto; }
+  .fv-ln { padding: 1px 10px; white-space: pre-wrap; }
+  .fv-ln span { display: inline-block; width: 16px; color: var(--ink-400); }
+  .fv-ln.add { background: #dcfce7; } .fv-ln.del { background: #fee2e2; text-decoration: line-through; text-decoration-color: rgba(185,28,28,.4); }
+  .fv-slide { display: flex; flex-direction: column; gap: 8px; height: 100%; }
+  .fv-slide-h { display: flex; justify-content: space-between; font-size: 12px; }
+  .fv-slide-wrap { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #f1f5f9; border-radius: 10px; }
+  .fv-slide-wrap > img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .fv-slide-top { position: absolute; inset: 0 auto 0 0; overflow: hidden; border-right: 0; }
+  .fv-slide-top img { height: 100%; object-fit: contain; display: block; }
+  .fv-slide-bar { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: translateX(-1px); }
+  .ig-check { flex-direction: row !important; align-items: center; gap: 8px !important; font-weight: 500 !important; }
+  @media screen and (max-width: 640px) { .fv-box { height: 96vh; padding: 12px; } .fv-ctrl { width: 100%; } .fv-ctrl label { flex: 1 1 45%; } .fv-ctrl select { flex: 1; max-width: none; } }
+  .is-codeline input::placeholder { text-transform: none; }
 </style>
 </head>
 <body>
@@ -2020,7 +2086,7 @@
         <div class="is-wrap" id="isWrap">
           <div class="is-tablewrap">
             <table id="isTable">
-              <thead><tr><th>ID</th><th>Kode Kerusakan</th><th>Title</th><th>Status</th><th>Type</th><th class="num">Luas (m&sup2;)</th><th>Assigned to</th><th>Company</th><th>Start date</th><th>Due date</th><th>Versi DWG</th><th></th></tr></thead>
+              <thead><tr><th>ID</th><th>Kode Kerusakan</th><th>Title</th><th>Status</th><th>No. SPK</th><th>Type</th><th class="num">Luas (m&sup2;)</th><th>Assigned to</th><th>Company</th><th>Start date</th><th>Due date</th><th>Close date</th><th>Versi DWG</th><th></th></tr></thead>
               <tbody id="isBody"></tbody>
             </table>
           </div>
@@ -2049,18 +2115,16 @@
         <label class="span-2"><span>Title <span class="req">*</span></span><input type="text" id="isFTitle" autocomplete="off"></label>
         <label>Status<select id="isFStatus"><option>Open</option><option>In progress</option><option>In review</option><option>Closed</option></select></label>
         <label>Type<select id="isFType"></select></label>
-        <div class="span-2 is-codebox"><span>Kode Kerusakan</span><b id="isFCodeAuto">R1</b><em id="isFCodeNote"></em></div>
+        <div class="span-2 is-codein"><label for="isFCode"><span>Kode Kerusakan <span class="req">*</span></span></label><div class="is-codeline"><input type="text" id="isFCode" autocomplete="off" maxlength="12"><button type="button" class="btn-ghost" id="isFCodeSugBtn">Pakai saran <b id="isFCodeSug">R1</b></button></div><em id="isFCodeNote" class="is-hint"></em></div>
         <div class="span-2 is-place">
           <span class="is-fl2">Placement (lokasi di gambar)</span>
           <div id="isFPlace"></div>
           <div class="is-place-acts"><button type="button" class="btn-ghost" id="isFPickBtn">Pilih lokasi di gambar</button><button type="button" class="btn-ghost btn-danger-text" id="isFPlaceClear" hidden>Hapus penempatan</button></div>
           <span class="is-hint" id="isFPickNote" hidden>Upload file DWG di tab Files dulu untuk bisa memilih lokasi di gambar.</span>
         </div>
-        <label>Luas (m&sup2;)<input type="text" id="isFLuas" inputmode="decimal" placeholder="mis. 12,5" autocomplete="off"></label>
-        <label>No SPK<input type="text" id="isFSpk" inputmode="numeric" placeholder="diisi saat SPK terbit" autocomplete="off"></label>
+        <div class="span-2 is-auto" id="isFAuto"></div>
         <label class="span-2">Description<textarea id="isFDesc" rows="2" placeholder="Jelaskan kerusakannya"></textarea></label>
-        <label>Assigned to<input type="text" id="isFAssignee" list="isNameList" placeholder="Nama PIC" autocomplete="off"><datalist id="isNameList"></datalist></label>
-        <label>Company<input type="text" id="isFCompany" list="isCompList" placeholder="mis. BSD TM" autocomplete="off"><datalist id="isCompList"></datalist></label>
+        <label class="span-2">Assigned to<input type="text" id="isFAssignee" list="isNameList" placeholder="Nama PIC" autocomplete="off"><datalist id="isNameList"></datalist></label>
         <label>Start date<input type="date" id="isFStart"></label>
         <label>Due date<input type="date" id="isFDue"></label>
         <label class="span-2">Root cause<select id="isFRoot"></select></label>
@@ -4728,7 +4792,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         start: parseIndo(startTxt),
         due: parseIndo(c[6].textContent.trim()),
         luas: parseNum(c[8].textContent.trim()),
-        formaSpk: normNo(row.dataset.noSpk || '')
+        formaSpk: normNo(row.dataset.noSpk || ''), spkFromApi: row.dataset.spkSrc === 'api'
       };
     }).filter(Boolean);
   }
@@ -4827,6 +4891,20 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     }
     throw new Error('Tidak ditemukan sheet rekap SPK yang punya kolom "No SPK SAP".');
   }
+  // "09 Sept 26 - 02 Okto 26" / "9 Sep 2026 s/d 2 Okt 2026" -> { mulai, selesai } (ISO)
+  const BLN = { jan: 0, feb: 1, peb: 1, mar: 2, apr: 3, mei: 4, may: 4, jun: 5, jul: 6, agu: 7, ags: 7, agt: 7, aug: 7, sep: 8, okt: 9, oct: 9, nov: 10, nop: 10, des: 11, dec: 11 };
+  function parseTglBebas(s) {
+    s = String(s || '').trim(); if (!s) return null;
+    let m = s.match(/^(\d{1,2})\s*[\s.\-\/]\s*([A-Za-z]{3,})\.?\s*[\s.\-\/]?\s*(\d{2,4})$/);
+    if (m) { const mo = BLN[m[2].slice(0, 3).toLowerCase()]; if (mo == null) return null; let y = +m[3]; if (y < 100) y += 2000; return new Date(y, mo, +m[1]); }
+    return parseAnyDate(s);
+  }
+  function parsePelaksanaan(t) {
+    const parts = String(t || '').split(/\s+(?:-|\u2013|s\/d|sd|sampai|hingga)\s+|\s*(?:\u2013|s\/d)\s*/i).map(x => x.trim()).filter(Boolean);
+    if (parts.length < 2) return null;
+    const a = parseTglBebas(parts[0]), b = parseTglBebas(parts[parts.length - 1]);
+    return a && b ? { mulai: toISO(a), selesai: toISO(b) } : null;
+  }
   function lines(v) { return String(v == null ? '' : v).split(/\r?\n/).map(s => s.trim()).filter(Boolean); }
   function dateCell(v) {
     if (v == null || v === '') return null;
@@ -4878,7 +4956,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         noManual: r[C.manual] != null ? String(r[C.manual]) : '',
         rabDate: (d => d ? toISO(d) : '')(dateCell(r[C.rab])), p3No: normNo(p3[0]), p3Date: (d => d ? toISO(d) : '')(dateCell(p3[1])),
         fptDate: (d => d ? toISO(d) : '')(dateCell(r[C.fpt])), negoDate: (d => d ? toISO(d) : '')(dateCell(r[C.nego])),
-        pelaksanaan: String(r[C.pelaksanaan] || '').trim(), ket: ''
+        pelaksanaan: String(r[C.pelaksanaan] || '').trim(), ket: '',
+        mulai: (parsePelaksanaan(r[C.pelaksanaan]) || {}).mulai || '', selesai: (parsePelaksanaan(r[C.pelaksanaan]) || {}).selesai || ''
       };
     });
     return { spks: out, warn: warn };
@@ -4957,14 +5036,30 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       i.spkId = null; i.spkSrc = ''; i.formaNo = i.formaSpk || (store.isDemo ? normNo(formaDemo[i.key]) : '');
       if (i.formaNo) {
         const id = byNo[i.formaNo];
-        if (id) { i.spkId = id; i.spkSrc = 'forma'; } else { i.spkMissing = true; }
+        if (id) { i.spkId = id; i.spkSrc = i.spkFromApi ? 'api' : 'forma'; } else { i.spkMissing = true; }
       }
       if (!i.spkId) {
         const m = store.map[i.key];
         if (m && store.spks[m]) { i.spkId = m; i.spkSrc = 'manual'; }
       }
-      if (i.spkId) spkIssues[i.spkId].push(i);
     });
+    // Aturan otomatis: titik di ruas yang sama dengan Start date & Due date yang SAMA = satu paket pekerjaan (satu SPK).
+    // (a) kalau salah satu titik di grup sudah punya SPK, titik lain di grup ikut SPK itu;
+    // (b) kalau belum, cari SPK di ruas itu yang tanggal pelaksanaannya (mulai-selesai) sama dengan start-due grup.
+    const dKey = d => d ? toISO(d) : '';
+    const groups = {};
+    issues.forEach(i => { if (i.start && i.due) { const k = i.ruas + '|' + dKey(i.start) + '|' + dKey(i.due); (groups[k] = groups[k] || []).push(i); } });
+    const spkList = Object.values(store.spks);
+    spkList.forEach(s => { if (!s.mulai && s.pelaksanaan) { const pp = parsePelaksanaan(s.pelaksanaan); if (pp) { s.mulai = pp.mulai; s.selesai = pp.selesai; } } });
+    const near = (a, b) => a && b && Math.abs(fromISO(a) - fromISO(b)) <= 86400000;
+    Object.keys(groups).forEach(k => {
+      const g = groups[k], [ruas, st, du] = k.split('|');
+      let sid = (g.find(i => i.spkId) || {}).spkId;
+      if (!sid) { const s = spkList.find(s => (s.jenis || 'Jalan') === 'Jalan' && (s.ruas || []).includes(ruas) && near(s.mulai, st) && near(s.selesai, du)); if (s) sid = s.id; }
+      if (!sid) return;
+      g.forEach(i => { if (!i.spkId && !i.spkMissing) { i.spkId = sid; i.spkSrc = 'tanggal'; } });
+    });
+    issues.forEach(i => { if (i.spkId && spkIssues[i.spkId]) spkIssues[i.spkId].push(i); });
     // Nilai SPK dibagi ke titik-titiknya secara proporsional (luas x tarif), fallback rata.
     const alloc = {};
     Object.keys(spkIssues).forEach(id => {
@@ -5360,7 +5455,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     if (s.addendum) html += '<p class="foot-note" style="margin-top:8px;">Termasuk ' + s.addendum.length + ' baris addendum: ' + s.addendum.map(a => esc(a.nama.slice(0, 60)) + ' (' + rp(a.dpp) + ')').join('; ') + '</p>';
     html += '<p class="detail-section-title">Titik kerusakan yang merujuk SPK ini (' + list.length + ')</p>';
     html += list.length ? '<div style="overflow-x:auto;"><table style="min-width:640px;"><thead><tr><th>Kode</th><th>Ruas ROW</th><th>Type</th><th>Status</th><th>Start date</th><th>Sumber</th><th class="num">Porsi nilai (Rp)</th></tr></thead><tbody>' +
-      list.map(i => '<tr><td>' + esc(i.code) + '</td><td>' + esc(i.ruas) + '</td><td>' + esc(i.type) + '</td><td>' + esc(i.status) + '</td><td>' + fmtTgl(i.start) + '</td><td>' + (i.spkSrc === 'forma' ? 'Forma' : 'sementara') + '</td><td class="num">' + rp(model.alloc[i.key]) + '</td></tr>').join('') + '</tbody></table></div>' +
+      list.map(i => '<tr><td>' + esc(i.code) + '</td><td>' + esc(i.ruas) + '</td><td>' + esc(i.type) + '</td><td>' + esc(i.status) + '</td><td>' + fmtTgl(i.start) + '</td><td>' + ({ forma: 'Forma', api: 'API', tanggal: 'Otomatis (tanggal)' }[i.spkSrc] || 'sementara') + '</td><td class="num">' + rp(model.alloc[i.key]) + '</td></tr>').join('') + '</tbody></table></div>' +
       '<p class="foot-note" style="margin-top:8px;">Porsi nilai = DPP dibagi proporsional terhadap luas \u00d7 tarif tiap titik (SPK tidak merinci biaya per titik).</p>'
       : '<p class="foot-note">' + (s.jenis === 'Jalan' ? 'Belum ada titik di Forma yang mengisi "No SPK" = ' + esc(s.no) + '.' : 'SPK ini bukan pekerjaan jalan, jadi tidak dihubungkan ke titik kerusakan jalan.') + '</p>';
     $('detailModalBody').innerHTML = html;
@@ -5461,6 +5556,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     salah: { head: ['Kode', 'Ruas ROW', 'Status', 'No SPK di Forma', 'Kemungkinan'], hint: 'Nomor SPK yang diisi di Forma tidak ditemukan di Rekap SPK SAP. Bisa jadi salah ketik, atau SPK-nya belum ada di file rekap yang di-import.' },
     cocok: { head: ['', 'Kode', 'Ruas ROW', 'Type', 'Status', 'No. SPK', 'Sumber', 'Porsi nilai (Rp)'], hint: 'Titik yang sudah terhubung ke SPK. Sumber "Forma" berarti nomor SPK diambil dari field di issue; "sementara" berarti ditetapkan manual di sini.' }
   };
+  function srcTag(s) {
+    return { forma: '<span class="src-tag forma">Forma</span>', api: '<span class="src-tag forma">API</span>', tanggal: '<span class="src-tag forma" title="Start & due date sama dengan titik lain / tanggal pelaksanaan SPK">Otomatis (tanggal)</span>' }[s] || '<span class="src-tag">sementara</span>';
+  }
   function renderDsIssues() {
     const m = model;
     const term = (($('dsIssueSearch') || {}).value || '').trim().toLowerCase();
@@ -5501,7 +5599,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         (near.length ? 'SPK jalan di ruas ini: ' + near.slice(0, 3).map(esc).join(', ') : 'Belum ada SPK jalan di ruas ini pada rekap SAP') + '</td></tr>';
     }).join('');
     if (dsFilter === 'cocok') html = pg.items.map((i, n) => '<tr class="' + grp(i, n) + (selected.has(i.key) ? ' row-selected' : '') + '">' + (i.spkSrc === 'manual' ? cb(i) : '<td></td>') + '<td>' + esc(i.code) + '</td>' + ruasCell(i, n) + '<td>' + esc(i.type) + '</td><td>' + esc(i.status) + '</td>' +
-      '<td><button type="button" class="link-cell" data-spk="' + esc(i.spkId) + '"><span class="spk-chip">' + esc(spkLabel(i.spkId)) + '</span></button></td><td>' + (i.spkSrc === 'forma' ? '<span class="src-tag forma">Forma</span>' : '<span class="src-tag">sementara</span>') + '</td><td class="num">' + rp(m.alloc[i.key]) + '</td></tr>').join('');
+      '<td><button type="button" class="link-cell" data-spk="' + esc(i.spkId) + '"><span class="spk-chip">' + esc(spkLabel(i.spkId)) + '</span></button></td><td>' + srcTag(i.spkSrc) + '</td><td class="num">' + rp(m.alloc[i.key]) + '</td></tr>').join('');
     const empty = { belum: m.issues.length ? 'Semua titik sudah punya nomor SPK.' : 'Belum ada titik kerusakan. Upload data Forma atau DWG di ruas jalan dulu.', tanpa: 'Semua SPK jalan sudah punya titik di Forma.', salah: 'Tidak ada nomor SPK yang salah.', cocok: 'Belum ada titik yang terhubung ke SPK.' }[dsFilter];
     $('dsIssueBody').innerHTML = html || '<tr><td colspan="' + cfg.head.length + '" style="text-align:center; color:var(--ink-400); padding:22px 8px;">' + empty + '</td></tr>';
     const ca = $('dsCheckAll');
@@ -6168,7 +6266,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         } else if (e.type === 'POINT' && e.position) pts.push({ p: T([e.position.x, e.position.y]), z: e.position.z });
         else if (e.type === 'LWPOLYLINE' || e.type === 'POLYLINE2D' || e.type === 'POLYLINE3D') {
           const v = (e.vertices || []).map(p => T([p.x, p.y]));
-          if (v.length > 1) { const closed = (e.flag & 1) === 1; lines.push(closed ? v.concat([v[0]]) : v); if (kat && closed && v.length > 2) dmg.push({ kat: kat, pts: v, handle: e.handle }); }
+          if (v.length > 1) {
+            // garis batas dianggap tertutup kalau flag "closed" aktif ATAU titik awal = titik akhir
+            const closed = (e.flag & 1) === 1 || (v.length > 3 && Math.hypot(v[0][0] - v[v.length - 1][0], v[0][1] - v[v.length - 1][1]) < 0.01);
+            lines.push((e.flag & 1) === 1 ? v.concat([v[0]]) : v);
+            if (kat && closed && v.length > 2) dmg.push({ kat: kat, pts: (e.flag & 1) === 1 ? v : v.slice(0, -1), handle: e.handle, src: 'garis' });
+          }
         } else if (e.type === 'CIRCLE') lines.push(arcPts(e.center.x, e.center.y, e.radius, 0, Math.PI * 2, T));
         else if (e.type === 'ARC') lines.push(arcPts(e.center.x, e.center.y, e.radius, e.startAngle, e.endAngle, T));
         else if (e.type === 'HATCH') {
@@ -6179,7 +6282,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
               if (ed.type === 2 && ed.center) pts = pts.concat(arcPts(ed.center.x, ed.center.y, ed.radius, (ed.startAngle || 0), (ed.endAngle || 0), T).slice(0, -1));
               else if (ed.start) pts.push(T([ed.start.x, ed.start.y]));
             });
-            if (pts.length > 2) { lines.push(pts.concat([pts[0]])); if (kat) dmg.push({ kat: kat, pts: pts, handle: e.handle + '#' + bi }); }
+            if (pts.length > 2) { lines.push(pts.concat([pts[0]])); if (kat) dmg.push({ kat: kat, pts: pts, handle: e.handle + '#' + bi, src: 'arsiran' }); }
           });
         } else if (e.type === 'INSERT' && depth < 6 && blocks[e.name]) {
           const ip = e.insertionPoint || { x: 0, y: 0 }, sx = e.xScale || 1, sy = e.yScale || 1, r = e.rotation || 0, cs = Math.cos(r), sn = Math.sin(r);
@@ -6189,11 +6292,16 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       });
     }
     walk(db.entities, p => p, 0);
-    // buang area dobel (hatch + polyline batasnya pada kategori yang sama)
-    const uniq = [];
+    // Area yang sama bisa tergambar dua kali: arsiran (warna) + garis batasnya. Dihitung sekali saja.
+    // Kalau layer keduanya berbeda (mis. arsiran di SEDANG, garis batas di BERAT), kategori mengikuti arsiran
+    // (yang terlihat berwarna di gambar) dan perbedaannya dicatat supaya bisa dicek tim survey.
+    const uniq = [], mismatch = [];
+    dmg.sort((a, b) => (a.src === 'arsiran' ? 0 : 1) - (b.src === 'arsiran' ? 0 : 1));
     dmg.forEach(d => {
       d.area = polyArea(d.pts); d.at = labelPoint(d.pts);
-      if (!uniq.some(u => u.kat === d.kat && Math.abs(u.area - d.area) < 0.01 && Math.hypot(u.at[0] - d.at[0], u.at[1] - d.at[1]) < 0.5)) uniq.push(d);
+      const twin = uniq.find(u => Math.abs(u.area - d.area) < 0.01 && (inside(d.at, u.pts) || Math.hypot(u.at[0] - d.at[0], u.at[1] - d.at[1]) < 0.5));
+      if (!twin) { uniq.push(d); return; }
+      if (twin.kat !== d.kat) { mismatch.push({ area: Math.round(d.area * 1000) / 1000, fill: twin.kat, outline: d.kat, at: [Math.round(twin.at[0] * 1000) / 1000, Math.round(twin.at[1] * 1000) / 1000] }); twin.outlineKat = d.kat; }
     });
     let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
     lines.forEach(l => l.forEach(p => { if (p[0] < minx) minx = p[0]; if (p[0] > maxx) maxx = p[0]; if (p[1] < miny) miny = p[1]; if (p[1] > maxy) maxy = p[1]; }));
@@ -6202,7 +6310,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       lines: lines.map(l => l.map(p => [r3(p[0]), r3(p[1])])),
       texts: texts.slice(0, 5000).map(t => ({ t: t.t, p: [r3(t.p[0]), r3(t.p[1])], h: t.h, r: t.r })),
       points: pts.slice(0, 20000).map(q => ({ p: [r3(q.p[0]), r3(q.p[1])], z: q.z })),
-      dmg: uniq.map(d => ({ kat: d.kat, area: Math.round(d.area * 1000) / 1000, at: [r3(d.at[0]), r3(d.at[1])], pts: d.pts.map(p => [r3(p[0]), r3(p[1])]), handle: d.handle })),
+      mismatch: mismatch,
+      dmg: uniq.map(d => ({ kat: d.kat, outlineKat: d.outlineKat || null, area: Math.round(d.area * 1000) / 1000, at: [r3(d.at[0]), r3(d.at[1])], pts: d.pts.map(p => [r3(p[0]), r3(p[1])]), handle: d.handle })),
       bbox: isFinite(minx) ? [minx, miny, maxx, maxy] : null,
       version: db.header && db.header.ACADVER, cogo: cogo
     };
@@ -6301,15 +6410,17 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const badge = s => s === 'Closed' ? '<span class="badge success">Closed</span>' : s === 'Open' ? '<span class="badge warning">Open</span>'
       : s === 'In review' ? '<span class="badge" style="background:#f2e9fb; color:#7c3aed;">In review</span>' : '<span class="badge" style="background:#e8eefd; color:#1d4ed8;">In progress</span>';
     want.forEach(t => {
-      const sig = [t.code, t.type, t.status, t.luas, t.noSpk, t.lat, t.rootCause, t.start, t.due, t.assignee, t.company].join('|');
+      const ex = t.ext || {};
+      const luasV = ex.luas != null ? ex.luas : (t.src === 'dwg' ? t.luas : 0), compV = ex.company || t.company || '', spkV = ex.noSpk || t.noSpk || '';
+      const sig = [t.code, t.type, t.status, luasV, spkV, t.lat, t.rootCause, t.start, t.due, t.assignee, compV, t.closedAt].join('|');
       let tr = tb.querySelector('tr[data-app-id="' + t.id + '"]');
       if (tr && tr.dataset.sig === sig) return;
       const rep = /\.\d+$/.test(String(t.code || ''));
       const html = '<td>' + esc(t.code) + '</td><td>' + esc(t.ruas) + '</td><td>' + esc(t.type) + '</td><td>' + esc(t.rootCause || (rep ? 'Kerusakan Berulang di Titik yang Sama' : t.src === 'dwg' ? 'Dari gambar DWG' : 'Input manual')) + '</td><td>' + badge(t.status) + '</td>' +
-        '<td>' + fmtTgl(fromISO(t.start || t.created)) + '</td><td>' + (t.due ? fmtTgl(fromISO(t.due)) : '\u2013') + '</td><td>' + (t.status === 'Closed' && t.closedAt ? fmtTgl(fromISO(t.closedAt)) : '\u2013') + '</td><td class="num">' + num(t.luas || 0, 3) + '</td><td>' + esc(t.assignee || '\u2013') + '</td><td>' + esc(t.company || '\u2013') + '</td>' +
+        '<td>' + fmtTgl(fromISO(t.start || t.created)) + '</td><td>' + (t.due ? fmtTgl(fromISO(t.due)) : '\u2013') + '</td><td>' + (t.status === 'Closed' && t.closedAt ? fmtTgl(fromISO(t.closedAt)) : '\u2013') + '</td><td class="num">' + num(luasV || 0, 3) + '</td><td>' + esc(t.assignee || '\u2013') + '</td><td>' + esc(compV || '\u2013') + '</td>' +
         '<td>' + (t.lat ? '<a href="https://www.google.com/maps?q=' + t.lat + ',' + t.lon + '" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:underline; font-size:12px; white-space:nowrap;">Lihat Titik Issue</a>' : '\u2013') + '</td>';
       if (!tr) { tr = document.createElement('tr'); tb.appendChild(tr); }
-      tr.dataset.appId = t.id; tr.dataset.issueId = 'app:' + t.id; tr.dataset.status = t.status; tr.dataset.recurring = rep ? '1' : '0'; tr.dataset.noSpk = t.noSpk || ''; tr.dataset.sig = sig;
+      tr.dataset.appId = t.id; tr.dataset.issueId = 'app:' + t.id; tr.dataset.status = t.status; tr.dataset.recurring = rep ? '1' : '0'; tr.dataset.noSpk = spkV; tr.dataset.spkSrc = ex.noSpk ? 'api' : ''; tr.dataset.sig = sig;
       tr.innerHTML = html; changedAny = true;
     });
     injecting = false;
@@ -6387,7 +6498,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const cur = f.versions[f.versions.length - 1];
       const isDwg = /\.dwg$/i.test(f.name);
       const isImg = /^image\//.test(cur.type || '') || /\.(png|jpe?g|gif|webp)$/i.test(f.name), isPdf = /\.pdf$/i.test(f.name);
-      const act = isDwg ? 'Klik untuk membuka gambar' : f.folder === 'Survey (PNEZD)' ? 'Klik untuk melihat titik survey di gambar' : (isImg || isPdf) ? 'Klik untuk membuka file' : 'Klik untuk download';
+      const act = isDwg ? 'Klik untuk membuka gambar' : 'Klik untuk melihat file' + (f.versions.length > 1 ? ' (bisa dibandingkan antar versi)' : '');
       return '<tr class="rs-frow" data-frow="' + esc(f.id) + '" tabindex="0" title="' + act + '"><td class="rs-fname"><span class="rs-ext ' + (isDwg ? 'dwg' : '') + '">' + esc((f.name.split('.').pop() || '').toUpperCase().slice(0, 4)) + '</span><span>' + esc(f.name) + '</span></td>' +
         '<td><button type="button" class="rs-vchip" data-hist="' + esc(f.id) + '" title="Riwayat versi">V' + cur.v + '</button></td>' +
         '<td class="num">' + fmtSize(cur.size) + '</td><td style="white-space:nowrap;">' + fmtWaktu(cur.date) + '</td>' +
@@ -6399,20 +6510,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   // satu baris file bisa diklik: DWG -> buka gambar, PNEZD -> lihat titik di gambar, foto/PDF -> buka, lainnya -> download
   async function rsOpenFileRow(id) {
     const f = rs.files.find(x => x.id === id); if (!f) return;
-    const cur = f.versions[f.versions.length - 1];
     if (/\.dwg$/i.test(f.name)) { rs.viewFile = f.id; rs.viewV = null; rsSetTab('viewer'); return; }
-    if (f.folder === 'Survey (PNEZD)') {
-      const dwg = rs.files.find(x => /\.dwg$/i.test(x.name));
-      if (!dwg) { uiAlert('Titik survey ditampilkan di atas gambar DWG. Upload file DWG ruas ini dulu di folder Civil 3D.'); return; }
-      rs.viewFile = dwg.id; rs.viewV = null; rsSetTab('viewer'); return;
-    }
-    const isImg = /^image\//.test(cur.type || '') || /\.(png|jpe?g|gif|webp)$/i.test(f.name), isPdf = /\.pdf$/i.test(f.name);
-    if (isImg || isPdf) {
-      const b = await idbGet('blobs', cur.blobId); if (!b) { rsStatus('File tidak ditemukan di penyimpanan browser.', false); return; }
-      const a = document.createElement('a'); a.href = URL.createObjectURL(b.blob); a.target = '_blank'; a.rel = 'noopener';
-      document.body.appendChild(a); a.click(); setTimeout(() => { a.remove(); }, 1000); return;
-    }
-    rsDownload(f.id, cur.v);
+    openFileViewer(f.id);   // file lain dibuka di pratinjau aplikasi (bisa banding versi)
   }
   if ($('rsFileBody')) {
     $('rsFileBody').addEventListener('click', e => {
@@ -6457,9 +6556,17 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         rsStatus('Membaca isi DWG ' + file.name + '\u2026 (pertama kali perlu memuat pembaca DWG \u00b19 MB)', null);
         const geom = await parseDwg(await file.arrayBuffer());
         await idbPut('geom', Object.assign({ id: blobId }, geom));
-        const r = applyDwgToIssues(rs.ruas, rec.id, v, geom, now.slice(0, 10));
-        ver.dwg = { cogo: geom.cogo || 0, n: geom.dmg.length, ringan: geom.dmg.filter(d => d.kat === 'Ringan').length, sedang: geom.dmg.filter(d => d.kat === 'Sedang').length, berat: geom.dmg.filter(d => d.kat === 'Berat').length, res: r };
-        if (v > 1 && !r.baru && !r.cocokForma && !r.update && !r.hilang) msg += ' ' + geom.dmg.length + ' area kerusakan terbaca \u2014 tidak ada perubahan titik dibanding versi sebelumnya.';
+        // Area kerusakan di DWG hanya DITAMPILKAN di gambar. Issue dibuat manual (Create issue / Tambah pin / klik area),
+        // kode kerusakan diisi manual, luas/company/No SPK nanti otomatis dari API eksternal.
+        const r = { baru: 0, cocokForma: 0, update: 0, hilang: 0, berulang: 0, berulangList: [], berubah: 0, berubahList: [], manual: true };
+        ver.dwg = { cogo: geom.cogo || 0, n: geom.dmg.length, ringan: geom.dmg.filter(d => d.kat === 'Ringan').length, sedang: geom.dmg.filter(d => d.kat === 'Sedang').length, berat: geom.dmg.filter(d => d.kat === 'Berat').length, res: r, mismatch: (geom.mismatch || []).length };
+        if ((geom.mismatch || []).length) {
+          const mm = geom.mismatch, grp = {};
+          mm.forEach(x => { const k = 'arsiran ' + x.fill + ' / garis batas ' + x.outline; grp[k] = (grp[k] || 0) + 1; });
+          msg += ' \u26A0 Perlu dicek: ' + mm.length + ' area punya layer berbeda antara arsiran dan garis batasnya (' + Object.keys(grp).map(k => grp[k] + '\u00d7 ' + k).join(', ') + '). Kategori diambil dari arsiran.';
+        }
+        if (r.manual) msg += ' ' + geom.dmg.length + ' area kerusakan terlihat di gambar (' + ver.dwg.ringan + ' ringan, ' + ver.dwg.sedang + ' sedang, ' + ver.dwg.berat + ' berat). Buat issue lewat tab Gambar & titik: klik area kerusakan, Tambah pin, atau Create issue.';
+        else if (v > 1 && !r.baru && !r.cocokForma && !r.update && !r.hilang) msg += ' ' + geom.dmg.length + ' area kerusakan terbaca \u2014 tidak ada perubahan titik dibanding versi sebelumnya.';
         else msg += ' ' + geom.dmg.length + ' area kerusakan terbaca \u2192 ' + r.baru + ' titik baru' + (r.berulang ? ' (' + r.berulang + ' di antaranya kerusakan berulang: ' + r.berulangList.join(', ') + ')' : '') +
           (r.berubah ? ', ' + r.berubah + ' titik berubah kategori (' + r.berubahList.join(', ') + ')' : '') + (r.cocokForma ? ', ' + r.cocokForma + ' dicocokkan ke titik Forma yang sudah ada' : '') +
           (r.update ? ', ' + r.update + ' titik diperbarui luasnya' : '') + (r.hilang ? ', ' + r.hilang + ' titik tidak ada lagi di versi ini (ditandai)' : '') + '.';
@@ -6498,14 +6605,15 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const dl = e.target.closest('[data-dl]'); if (dl) { const [id, v] = dl.dataset.dl.split('|'); rsDownload(id, parseInt(v, 10)); return; }
     const h = e.target.closest('[data-hist]'); if (h) { rsHistory(h.dataset.hist); return; }
     const o = e.target.closest('[data-openv]'); if (o) { rs.viewFile = o.dataset.openv; rs.viewV = null; rsSetTab('viewer'); return; }
-    const vv = e.target.closest('[data-viewv]'); if (vv) { const [id, v] = vv.dataset.viewv.split('|'); fvModal.hidden = true; rs.viewFile = id; rs.viewV = parseInt(v, 10); rsSetTab('viewer'); return; }
+    const vv = e.target.closest('[data-viewv]'); if (vv) { const [id, v] = vv.dataset.viewv.split('|'); fvModal.hidden = true; const ff = rs.files.find(x => x.id === id); if (ff && !/\.dwg$/i.test(ff.name)) { openFileViewer(id, parseInt(v, 10)); return; } rs.viewFile = id; rs.viewV = parseInt(v, 10); rsSetTab('viewer'); return; }
     const fm = e.target.closest('[data-fmenu]');
     if (fm) {
       const f = rs.files.find(x => x.id === fm.dataset.fmenu); if (!f) return;
       const cur = f.versions[f.versions.length - 1], isDwg = /\.dwg$/i.test(f.name);
       if (!actMenu.hidden && actAnchor === fm) { closeActMenu(); return; }
       openActMenu(fm, [
-        isDwg ? { label: 'Buka gambar', fn: () => { rs.viewFile = f.id; rs.viewV = null; rsSetTab('viewer'); } } : null,
+        isDwg ? { label: 'Buka gambar', fn: () => { rs.viewFile = f.id; rs.viewV = null; rsSetTab('viewer'); } } : { label: 'Lihat file', fn: () => openFileViewer(f.id) },
+        !isDwg && f.versions.length > 1 ? { label: 'Bandingkan versi', fn: () => { openFileViewer(f.id); const p = f.versions[f.versions.length - 2].v; $('fvvB').value = p; $('fvvB').dispatchEvent(new Event('change')); } } : null,
         { label: 'Download (V' + cur.v + ')', fn: () => rsDownload(f.id, cur.v) },
         { label: 'Riwayat versi (' + f.versions.length + ')', fn: () => rsHistory(f.id) },
         '-',
@@ -6520,7 +6628,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const latest = f.versions[f.versions.length - 1].v, isDwg = /\.dwg$/i.test(f.name);
       if (!actMenu.hidden && actAnchor === vm) { closeActMenu(); return; }
       openActMenu(vm, [
-        isDwg ? { label: 'Lihat gambar V' + v, fn: () => { fvModal.hidden = true; rs.viewFile = id; rs.viewV = v; rsSetTab('viewer'); } } : null,
+        isDwg ? { label: 'Lihat gambar V' + v, fn: () => { fvModal.hidden = true; rs.viewFile = id; rs.viewV = v; rsSetTab('viewer'); } } : { label: 'Lihat V' + v, fn: () => { fvModal.hidden = true; openFileViewer(id, v); } },
+        !isDwg && v !== latest ? { label: 'Bandingkan V' + v + ' dengan V' + latest + ' (terbaru)', fn: () => { fvModal.hidden = true; openFileViewer(id, latest); $('fvvB').value = v; $('fvvB').dispatchEvent(new Event('change')); } } : null,
         { label: 'Download V' + v, fn: () => rsDownload(id, v) },
         '-',
         f.versions.length === 1 ? { label: 'Hapus file', danger: true, fn: () => { fvModal.hidden = true; rsDeleteFile(id); } }
@@ -6573,7 +6682,36 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   // jadi semua digambar relatif terhadap titik asal (pojok gambar).
   const svg = $('rsSvg');
   const SX = x => x - (rs.ox || 0), SY = y => -(y - (rs.oy || 0));
-  function rsSetOrigin() { const bb = rs.geom && rs.geom.bbox; rs.ox = bb ? Math.floor(bb[0]) : 0; rs.oy = bb ? Math.floor(bb[1]) : 0; }
+  // Area utama gambar, tanpa objek nyasar (mis. kop gambar / viewport yang letaknya jauh dari jalan, atau objek di titik 0,0).
+  // Dipakai untuk "Pas layar" dan sebagai titik acuan koordinat: browser menggambar SVG dengan presisi terbatas,
+  // jadi kalau acuannya jauh (koordinat jutaan meter) arsiran & garis bisa bergeser beberapa puluh cm.
+  function rsCoreBox(g) {
+    if (!g) return null;
+    if (g.core) return g.core;
+    const xs = [], ys = [];
+    const push = p => { xs.push(p[0]); ys.push(p[1]); };
+    (g.dmg || []).forEach(d => d.pts.forEach(push));
+    const all = []; (g.lines || []).forEach(l => l.forEach(p => all.push(p)));
+    const step = Math.max(1, Math.floor(all.length / 20000));
+    for (let i = 0; i < all.length; i += step) push(all[i]);
+    (g.points || []).forEach(p => push([p.x, p.y]));
+    if (!xs.length) return g.bbox || null;
+    // Titik acuan = median area kerusakan (kalau ada), kalau tidak median semua titik.
+    // Median tidak terpengaruh objek nyasar (mis. ratusan titik di 0,0 atau kop gambar di koordinat lain).
+    const med = arr => { const s = arr.slice().sort((p, q) => p - q); return s[Math.floor((s.length - 1) / 2)]; };
+    const dx = [], dy = []; (g.dmg || []).forEach(dm => dm.pts.forEach(p => { dx.push(p[0]); dy.push(p[1]); }));
+    const mx = dx.length ? med(dx) : med(xs), my = dy.length ? med(dy) : med(ys);
+    // Ambil titik yang "bergerombol" dengan acuan: radius = 3x jarak persentil-90, dibatasi 300 m s/d 20 km
+    const dist = xs.map((x, i) => Math.hypot(x - mx, ys[i] - my));
+    const ds = dist.slice().sort((p, q) => p - q);
+    const R = Math.min(20000, Math.max(300, ds[Math.floor(0.9 * (ds.length - 1))] * 3));
+    let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity;
+    for (let i = 0; i < xs.length; i++) { if (dist[i] > R) continue; const x = xs[i], y = ys[i]; if (x < a) a = x; if (x > c) c = x; if (y < b) b = y; if (y > d) d = y; }
+    (g.dmg || []).forEach(dm => dm.pts.forEach(p => { if (p[0] < a) a = p[0]; if (p[0] > c) c = p[0]; if (p[1] < b) b = p[1]; if (p[1] > d) d = p[1]; }));
+    g.core = isFinite(a) ? [a, b, c, d] : [mx - 50, my - 50, mx + 50, my + 50];
+    return g.core;
+  }
+  function rsSetOrigin() { const bb = rsCoreBox(rs.geom); rs.ox = bb ? Math.floor((bb[0] + bb[2]) / 2) : 0; rs.oy = bb ? Math.floor((bb[1] + bb[3]) / 2) : 0; }
   async function rsLoadSurvey() {
     const list = [];
     for (const f of rs.files.filter(x => x.versions.some(v => v.pnezd))) {
@@ -6619,7 +6757,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     }
     $('rsLoading').hidden = true;
     const cogoNote = rs.geom && rs.geom.cogo && !rs.survey.length ? ' \u00b7 Gambar ini berisi ' + rs.geom.cogo + ' titik survey Civil 3D yang belum bisa dibaca langsung; upload file PNEZD-nya ke folder Survey supaya titik bernomor tampil.' : '';
-    $('rsViewNote').textContent = (rs.geomLatest ? 'Scroll / cubit untuk zoom, tarik untuk menggeser. Zoom lebih dekat untuk melihat nomor, elevasi, dan keterangan titik.' : 'Menampilkan versi lama (V' + v + '). Pin menunjukkan titik saat ini; area berwarna mengikuti versi yang dipilih.') + cogoNote;
+    $('rsViewNote').textContent = (rs.geomLatest ? 'Scroll / cubit untuk zoom, tarik untuk menggeser. Klik area berwarna untuk membuat issue di area itu, klik pin untuk melihat issue.' : 'Menampilkan versi lama (V' + v + '). Pin menunjukkan titik saat ini; area berwarna mengikuti versi yang dipilih.') + cogoNote;
   }
   function rsSurveyBbox() {
     let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity;
@@ -6638,8 +6776,15 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     rsRenderPins();
   }
   function rsFit() {
-    const bb = rs.geom && rs.geom.bbox; if (!bb) return;
-    const w = bb[2] - bb[0], h = bb[3] - bb[1], pad = Math.max(w, h) * 0.04;
+    const bb = rsCoreBox(rs.geom); if (!bb) return;
+    // gambar dibuat memenuhi area tampilan (hanya sisa tepi tipis 1,5%)
+    const w = bb[2] - bb[0], h = bb[3] - bb[1], pad = Math.max(w, h) * 0.015;
+    // tinggi area gambar mengikuti bentuk gambar (gambar memanjang -> area lebih pendek), supaya kiri-kanan-atas-bawah mentok
+    const cv = $('rsCanvas');
+    if (cv && !document.body.classList.contains('rs-full') && w > 0) {
+      const cw = cv.clientWidth || 800, want = cw * (h + pad * 2) / (w + pad * 2);
+      cv.style.height = Math.round(Math.min(window.innerHeight * 0.75, Math.max(320, want))) + 'px';
+    } else if (cv) cv.style.height = '';
     rs.view = { x: SX(bb[0]) - pad, y: SY(bb[3]) - pad, w: w + pad * 2, h: h + pad * 2 };
     rsApplyView();
   }
@@ -6758,7 +6903,18 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const spt = hit && hit.closest && hit.closest('[data-spt]');
       if (spt && !rs.pinMode) { rsSurveyInfo(rs.survey[parseInt(spt.dataset.spt, 10)]); return; }
       if (rs.pinMode) { const w = pxToWorld(e.clientX, e.clientY); rsAddPinAt(w[0] + (rs.ox || 0), (rs.oy || 0) - w[1]); return; }
-      if (rs.sel) { rs.sel = null; $('rsSide').hidden = true; rsRenderPins(); }
+      if (rs.sel) { rs.sel = null; $('rsSide').hidden = true; rsRenderPins(); return; }
+      // klik area kerusakan di gambar -> buat issue di area itu (kategori mengikuti layer; luas tetap dari API)
+      if (rs.geom && rs.geomLatest !== false) {
+        const w = pxToWorld(e.clientX, e.clientY), wx = w[0] + (rs.ox || 0), wy = (rs.oy || 0) - w[1];
+        const area = (rs.geom.dmg || []).find(d => inside([wx, wy], d.pts));
+        if (area) {
+          const used = appIssues.list.find(t => t.ruas === rs.ruas && t.active !== false && !t.nextId && t.x != null && inside([t.x, t.y], area.pts) && statusOfAi(t) !== 'Closed');
+          if (used) { rsSelect(used.id); return; }
+          const at = area.at || [wx, wy];
+          isOpenForm(null, 'code', { x: at[0], y: at[1], fileId: rs.viewFile, fileV: rs.geomV, poly: area.pts, kat: area.kat });
+        }
+      }
     };
     svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); pinch = null; });
     window.addEventListener('resize', () => { if (rs.tab === 'viewer' && document.body.dataset.activePage === 'ruas') rsApplyView(); });
@@ -6932,8 +7088,13 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const fx = fc ? { assignee: fc[9] ? fc[9].textContent.trim() : '', company: fc[10] ? fc[10].textContent.trim() : '', start: mi.start ? toISO(mi.start) : '', due: mi.due ? toISO(mi.due) : '', rootCause: fc[3] ? fc[3].textContent.trim() : '', luas: mi.luas } : null;
     return { kind: t.linkedKey ? 'linked' : t.src, t: t, mi: mi, id: t.id, num: t.num, code: t.code, title: t.title || t.type, status: t.linkedKey && mi ? mi.status : t.status,
       rootCause: fx ? fx.rootCause : t.rootCause,
-      type: t.type, luas: fx ? fx.luas : t.luas, assignee: fx ? fx.assignee : (t.assignee || ''), company: fx ? fx.company : (t.company || ''), start: fx ? fx.start : (t.start || t.created), due: fx ? fx.due : (t.due || ''),
-      spk: mi && mi.spkId ? spkLabel(mi.spkId) : (t.noSpk || ''), firstV: t.firstV || null, lastV: lastSeen, gone: !t.active, superseded: !!t.nextId, fileId: t.fileId };
+      type: t.type, luas: fx ? fx.luas : ((t.ext && t.ext.luas != null) ? t.ext.luas : (t.src === 'dwg' ? t.luas : null)),
+      luasSrc: fx ? 'forma' : (t.ext && t.ext.luas != null) ? 'api' : (t.src === 'dwg' && t.luas ? 'dwg' : ''),
+      assignee: fx ? fx.assignee : (t.assignee || ''), company: fx ? fx.company : ((t.ext && t.ext.company) || t.company || ''), companySrc: t.ext && t.ext.company ? 'api' : '',
+      start: fx ? fx.start : (t.start || t.created), due: fx ? fx.due : (t.due || ''),
+      closed: fx ? (fc[7] && parseIndo(fc[7].textContent.trim()) ? toISO(parseIndo(fc[7].textContent.trim())) : '') : (t.status === 'Closed' ? (t.closedAt || '') : ''),
+      spk: mi && mi.spkId ? spkLabel(mi.spkId) : '', spkId: mi && mi.spkId, spkSrc: mi && mi.spkSrc,
+      firstV: t.firstV || null, lastV: t.src === 'pin' && t.fileId ? (isLatestV(t.fileId) || lastSeen) : lastSeen, gone: !t.active, superseded: !!t.nextId, fileId: t.fileId };
   }
   function isItems() {
     aiEnsure();
@@ -6944,7 +7105,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const row = i.row, c = row ? row.querySelectorAll('td') : [];
       items.push({ kind: 'forma', mi: i, id: 'f:' + i.key, num: null, code: i.code, title: i.type, status: i.status, type: i.type, luas: i.luas,
         assignee: c[9] ? c[9].textContent.trim() : '', company: c[10] ? c[10].textContent.trim() : '', start: i.start ? toISO(i.start) : '', due: i.due ? toISO(i.due) : '',
-        rootCause: c[3] ? c[3].textContent.trim() : '', spk: i.spkId ? spkLabel(i.spkId) : '', firstV: null, lastV: null });
+        rootCause: c[3] ? c[3].textContent.trim() : '', spk: i.spkId ? spkLabel(i.spkId) : '', spkId: i.spkId, spkSrc: i.spkSrc, luasSrc: 'forma',
+        closed: c[7] && parseIndo(c[7].textContent.trim()) ? toISO(parseIndo(c[7].textContent.trim())) : '', firstV: null, lastV: null });
     });
     return items;
   }
@@ -6987,13 +7149,15 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       return '<tr class="is-row' + (isState.sel === it.id ? ' sel' : '') + (it.gone || it.superseded ? ' pj-archived' : '') + '" data-isid="' + esc(it.id) + '" tabindex="0">' +
         '<td class="is-id">' + (it.num ? '#' + it.num : '<span style="color:var(--ink-400);">F</span>') + '</td>' +
         '<td><b>' + esc(it.code) + '</b>' + (n > 1 ? ' <span class="rep-chip' + (subOf(it.code) > 1 ? ' on' : '') + '">ke-' + subOf(it.code) + '/' + n + '</span>' : '') + '</td>' +
-        '<td>' + esc(it.title) + '</td><td class="is-st">' + isStatusDot(it.status) + '</td><td class="is-ty">' + isTypeBadge(it.type) + '</td>' +
-        '<td class="num">' + (it.luas ? num(it.luas, 3) : '\u2013') + '</td><td>' + esc(it.assignee || '\u2013') + '</td><td>' + esc(it.company || '\u2013') + '</td>' +
+        '<td>' + esc(it.title) + '</td><td class="is-st">' + isStatusDot(it.status) + '</td>' +
+        '<td>' + (it.spk ? '<span class="spk-chip">' + esc(it.spk) + '</span>' : '<span class="spk-none">Belum SPK</span>') + '</td><td class="is-ty">' + isTypeBadge(it.type) + '</td>' +
+        '<td class="num">' + (it.luas ? num(it.luas, 3) : '<span class="ext-wait" title="Otomatis dari API eksternal">menunggu</span>') + '</td><td>' + esc(it.assignee || '\u2013') + '</td><td>' + esc(it.company || '\u2013') + '</td>' +
         '<td style="white-space:nowrap;">' + (it.start ? fmtTgl(fromISO(it.start)) : '\u2013') + '</td>' +
         '<td style="white-space:nowrap;' + (it.due && it.status !== 'Closed' && fromISO(it.due) < new Date() ? 'color:var(--danger);' : '') + '">' + (it.due ? fmtTgl(fromISO(it.due)) : '\u2013') + '</td>' +
+        '<td style="white-space:nowrap;">' + (it.closed ? fmtTgl(fromISO(it.closed)) : '\u2013') + '</td>' +
         '<td style="white-space:nowrap;">' + isVerText(it) + '</td>' +
         '<td style="text-align:right;"><button type="button" class="act-btn" data-ismenu="' + esc(it.id) + '" aria-haspopup="menu" aria-label="Aksi untuk ' + esc(it.code) + '">&#8942;</button></td></tr>';
-    }).join('') || '<tr><td colspan="12" style="text-align:center; color:var(--ink-400); padding:26px 8px;">Belum ada issue yang cocok. Klik <b>Create issue</b>.</td></tr>';
+    }).join('') || '<tr><td colspan="14" style="text-align:center; color:var(--ink-400); padding:26px 8px;">Belum ada issue yang cocok. Klik <b>Create issue</b>.</td></tr>';
     $('isFoot').textContent = list.length ? 'Menampilkan ' + (start + 1) + '\u2013' + Math.min(start + isState.per, list.length) + ' dari ' + list.length + ' issue' : 'Tidak ada issue';
     $('isPage').textContent = isState.page + ' / ' + pages;
     $('isPrev').disabled = isState.page <= 1; $('isNext').disabled = isState.page >= pages;
@@ -7135,8 +7299,14 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const att = t && t.attachments && t.attachments.length ? '<div class="is-att">' + t.attachments.map(a => '<button type="button" class="is-attf" data-att="' + esc(a.id) + '" title="' + esc(a.name) + '">' + (/^image\//.test(a.type) ? '<img data-attimg="' + esc(a.id) + '" alt="">' : '<span>' + esc((a.name.split('.').pop() || '').toUpperCase()) + '</span>') + '<em>' + esc(a.name) + '</em></button>').join('') + '</div>' : '<span style="color:var(--ink-400);">Belum ada lampiran</span>';
     const log = ((t && t.log) || []).slice().reverse().map(l => '<li><span>' + fmtWaktu(l.at) + '</span>' + esc(l.text) + '</li>').join('') || '<li><span></span>Belum ada aktivitas tercatat.</li>';
     const nav = el.dataset.nav ? '<div class="is-nav"><button type="button" class="btn-ghost" data-isnav="-1" title="Issue sebelumnya (\u2190)">&lsaquo;</button><span>' + el.dataset.nav + '</span><button type="button" class="btn-ghost" data-isnav="1" title="Issue berikutnya (\u2192)">&rsaquo;</button></div>' : '';
+    const autoV = (v, src, unit) => v ? v + (unit || '') + (src === 'api' ? ' <span class="is-hint">dari API</span>' : src === 'dwg' ? ' <span class="is-hint">dari gambar (lama)</span>' : src === 'forma' ? ' <span class="is-hint">dari Forma</span>' : '') : '<span class="ext-wait">menunggu data API</span>';
+    const spkObj = it.spkId ? store.spks[it.spkId] : null;
+    const spkTop = '<div class="is-spktop ' + (it.spk ? 'ok' : 'none') + '"><span class="lbl">No SPK</span>' +
+      (it.spk ? '<button type="button" class="link-cell" data-spk="' + esc(it.spkId) + '"><b>' + esc(it.spk) + '</b></button><span class="src">' + ({ forma: 'dari Forma', api: 'dari API', tanggal: 'otomatis: start & due date sama', manual: 'sementara' }[it.spkSrc] || '') + '</span>' +
+        (spkObj ? '<span class="meta">' + fmtTgl(fromISO(spkObj.tanggal)) + (spkObj.nilai ? ' \u00b7 DPP ' + rp(spkObj.nilai) : '') + (spkObj.vendor ? ' \u00b7 ' + esc(spkObj.vendor) : '') + '</span>' : '')
+        : '<b>Belum SPK</b><span class="src">otomatis terisi saat SPK ruas ini masuk dengan tanggal pelaksanaan = start & due date issue</span>') + '</div>';
     el.innerHTML = '<div class="is-dhead"><div><h4>' + (it.num ? 'Issue #' + it.num : 'Issue Forma') + ' <span class="spk-chip">' + esc(it.code) + '</span></h4>' +
-      '<span class="is-dsub">' + (it.kind === 'dwg' ? 'Dari gambar DWG' : it.kind === 'pin' ? 'Dibuat manual' : it.kind === 'linked' ? 'Forma + DWG' : 'Forma') + '</span></div>' + nav + '<button type="button" class="v2-close" data-isclose aria-label="Tutup">&times;</button></div>' +
+      '<span class="is-dsub">' + (it.kind === 'dwg' ? 'Dari gambar DWG' : it.kind === 'pin' ? 'Dibuat manual' : it.kind === 'linked' ? 'Forma + DWG' : 'Forma') + '</span></div>' + nav + '<button type="button" class="v2-close" data-isclose aria-label="Tutup">&times;</button></div>' + spkTop +
       '<div class="is-dtabs"><button type="button" data-istab="details" class="' + (tab === 'details' ? 'on' : '') + '">Details</button><button type="button" data-istab="log" class="' + (tab === 'log' ? 'on' : '') + '">Activity log</button></div>' +
       '<div class="is-dacts">' + (editable ? '<button type="button" class="btn-ghost" data-isact="edit">&#9998; Edit</button>' : '') + (t && t.x != null && !it.gone && !it.superseded && rs.tab !== 'viewer' ? '<button type="button" class="btn-ghost" data-isact="goto">Lihat di gambar</button>' : '') +
       (el.id === 'rsSide' ? '<button type="button" class="btn-ghost" data-isact="full">&#x26F6; Detail lengkap</button>' : '') +
@@ -7151,11 +7321,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       '<div class="is-f"><div class="is-fl">Status</div><div class="is-fv"><div class="is-val">' + (editable ? '<select class="is-qstatus" data-isq="status">' + STATUSES.map(s => '<option' + (s === it.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select>' : isStatusDot(it.status)) + '</div></div></div>' +
       isField('Type', isTypeBadge(it.type), editable && t.src !== 'dwg' ? 'type' : '') +
       isField('Kode Kerusakan', '<b>' + esc(it.code) + '</b>', '') +
-      isField('Luas', it.luas ? num(it.luas, 3) + ' m\u00b2' + (t && t.src === 'dwg' ? ' <span class="is-hint">dari gambar</span>' : '') : '\u2013', editable && t.src !== 'dwg' ? 'luas' : '') +
-      isField('Assigned to', esc(it.assignee || '\u2013') + (it.company ? ' <span class="is-hint">(' + esc(it.company) + ')</span>' : ''), editable ? 'assignee' : '') +
+      isField('Luas <span class="auto-tag">otomatis</span>', autoV(it.luas ? num(it.luas, 3) : '', it.luasSrc, ' m\u00b2'), '') +
+      isField('Assigned to', esc(it.assignee || '\u2013'), editable ? 'assignee' : '') +
+      isField('Company <span class="auto-tag">otomatis</span>', autoV(esc(it.company || ''), it.companySrc || (it.kind === 'forma' || it.kind === 'linked' ? 'forma' : '')), '') +
       isField('Start date', it.start ? fmtTgl(fromISO(it.start)) : '\u2013', editable ? 'start' : '') +
       isField('Due date', it.due ? fmtTgl(fromISO(it.due)) : '\u2013', editable ? 'due' : '') +
-      isField('No SPK', it.spk ? '<span class="spk-chip">' + esc(it.spk) + '</span>' : '<span class="spk-none">Belum SPK</span>', editable ? 'spk' : '') +
+      isField('Close date', it.closed ? fmtTgl(fromISO(it.closed)) : '<span class="is-hint">terisi otomatis saat status Closed</span>', '') +
       isField('Root cause', esc(it.rootCause || '\u2013'), editable ? 'root' : '') +
       isField('Description', t && t.desc ? esc(t.desc).replace(/\n/g, '<br>') : '\u2013', editable ? 'desc' : '') +
       isField('Location details', esc((t && t.locDetail) || '\u2013'), editable ? 'loc' : '') +
@@ -7206,10 +7377,11 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const names = new Set(), comps = new Set(['BSD TM', 'BSD PMO']);
     appIssues.list.forEach(t => { if (t.assignee) names.add(t.assignee); if (t.company) comps.add(t.company); });
     $('isNameList').innerHTML = Array.from(names).map(n => '<option value="' + esc(n) + '">').join('');
-    $('isCompList').innerHTML = Array.from(comps).map(n => '<option value="' + esc(n) + '">').join('');
+    if ($('isCompList')) $('isCompList').innerHTML = Array.from(comps).map(n => '<option value="' + esc(n) + '">').join('');
   }
   function isPreviewCode() {
     const type = $('isFType').value;
+    isFormAuto();
     let code;
     const cur = isForm.editId && appIssues.list.find(x => x.id === isForm.editId);
     if (cur) code = letterFix(cur.code, type);
@@ -7219,10 +7391,23 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       isForm.host = host || null;
       code = host && statusOfAi(host) === 'Closed' ? nextRepeatCode(rs.ruas, baseOf(host.code), type) : nextBaseCode(rs.ruas, type);
     }
-    $('isFCodeAuto').textContent = code;
+    isForm.suggest = code;
+    const ci = $('isFCode');
+    ci.placeholder = 'mis. ' + code;
+    $('isFCodeSug').textContent = code; $('isFCodeSugBtn').hidden = ci.value.trim().toUpperCase() === code;
     const h = isForm.host;
-    $('isFCodeNote').textContent = cur ? 'Huruf mengikuti type, nomor lokasi tetap.' : h ? (statusOfAi(h) === 'Closed' ? 'Lokasi ini pernah rusak (' + h.code + ', sudah Closed) \u2192 dicatat sebagai kerusakan berulang.' : 'Perhatian: titik ini berada di area ' + h.code + ' yang masih ' + statusOfAi(h) + '.') : 'Nomor lokasi baru di ruas ini.';
+    $('isFCodeNote').textContent = cur ? 'Kode diisi manual. Saran mengikuti type & nomor lokasi yang sama.' : h ? (statusOfAi(h) === 'Closed' ? 'Lokasi ini pernah rusak (' + h.code + ', sudah Closed) \u2192 dicatat sebagai kerusakan berulang.' : 'Perhatian: titik ini berada di area ' + h.code + ' yang masih ' + statusOfAi(h) + '.') : 'Nomor lokasi baru di ruas ini.';
     if (!$('isFTitle').dataset.touched) $('isFTitle').value = type;
+  }
+  function isFormAuto() {
+    const t = isForm.cur, ex = (t && t.ext) || {};
+    const it = t ? isItemFromApp(t) : null;
+    const v = (x, unit) => x ? '<b>' + x + (unit || '') + '</b>' : '<span class="ext-wait">menunggu data API</span>';
+    $('isFAuto').innerHTML = '<span class="is-fl2">Diisi otomatis dari API eksternal</span><div class="auto-grid">' +
+      '<div><span>Luas</span>' + v(ex.luas != null ? num(ex.luas, 3) : (t && t.src === 'dwg' && t.luas ? num(t.luas, 3) : ''), ' m\u00b2') + '</div>' +
+      '<div><span>Company</span>' + v(esc(ex.company || (t && t.company) || '')) + '</div>' +
+      '<div><span>No SPK</span>' + v(it && it.spk ? esc(it.spk) : '') + '</div></div>' +
+      '<span class="is-hint">Dicocokkan berdasarkan ruas + Kode Kerusakan. No SPK juga otomatis untuk titik dengan start & due date yang sama.</span>';
   }
   function isRenderPlacement() {
     const p = isForm.placement;
@@ -7240,28 +7425,28 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     isForm.placement = t && t.x != null ? { x: t.x, y: t.y, fileId: t.fileId, fileV: t.fileV } : (placement || null);
     $('isFormTitle').textContent = t ? 'Edit issue #' + t.num + ' (' + t.code + ')' : 'Create issue';
     const types = isActiveTypes().map(x => x.name);
-    $('isFType').value = t && types.includes(t.type) ? t.type : (types[0] || 'Ringan');
+    $('isFType').value = t && types.includes(t.type) ? t.type : (placement && placement.kat && types.includes(placement.kat) ? placement.kat : (types[0] || 'Ringan'));
     $('isFType').disabled = !!(t && t.src === 'dwg');
     $('isFTitle').value = t ? (t.title || t.type) : $('isFType').value; $('isFTitle').dataset.touched = t ? '1' : '';
     $('isFStatus').value = t ? t.status : 'Open';
     $('isFDesc').value = t ? (t.desc || '') : '';
     $('isFAssignee').value = t ? (t.assignee || '') : '';
-    $('isFCompany').value = t ? (t.company || '') : '';
+    $('isFCode').value = t ? (t.code || '') : '';
     $('isFLoc').value = t ? (t.locDetail || '') : '';
     $('isFStart').value = t ? (t.start || t.created || '') : toISO(new Date());
     $('isFDue').value = t ? (t.due || '') : '';
     $('isFRoot').value = t ? (t.rootCause || '') : '';
-    $('isFLuas').value = t && t.luas ? String(Math.round(t.luas * 1000) / 1000).replace('.', ',') : '';
-    $('isFLuas').disabled = !!(t && t.src === 'dwg');
-    $('isFSpk').value = t ? (t.noSpk || '') : '';
+    isForm.cur = t || null;
     $('isFFiles').value = '';
     $('isFormErr').textContent = '';
     isRenderPlacement(); isPreviewCode();
     $('isFormModal').hidden = false;
-    const f = { title: 'isFTitle', type: 'isFType', luas: 'isFLuas', assignee: 'isFAssignee', start: 'isFStart', due: 'isFDue', spk: 'isFSpk', root: 'isFRoot', desc: 'isFDesc', loc: 'isFLoc' }[focusKey];
+    const f = { title: 'isFTitle', type: 'isFType', code: 'isFCode', assignee: 'isFAssignee', start: 'isFStart', due: 'isFDue', root: 'isFRoot', desc: 'isFDesc', loc: 'isFLoc' }[focusKey];
     setTimeout(() => { const el = $(f || 'isFTitle'); if (el && !el.disabled) { el.focus(); if (el.scrollIntoView) el.scrollIntoView({ block: 'center' }); } }, 40);
   }
-  $('isFType').addEventListener('change', isPreviewCode);
+  $('isFType').addEventListener('change', () => { const ci = $('isFCode'); const was = ci.value.trim().toUpperCase() === (isForm.suggest || ''); isPreviewCode(); if (was) ci.value = isForm.suggest; });
+  $('isFCodeSugBtn').addEventListener('click', () => { $('isFCode').value = isForm.suggest || ''; $('isFCodeSugBtn').hidden = true; });
+  $('isFCode').addEventListener('input', () => { $('isFCodeSugBtn').hidden = $('isFCode').value.trim().toUpperCase() === (isForm.suggest || ''); });
   $('isFTitle').addEventListener('input', () => { $('isFTitle').dataset.touched = '1'; });
   $('isFPlaceClear').addEventListener('click', () => { isForm.placement = null; isRenderPlacement(); isPreviewCode(); });
   $('isFPickBtn').addEventListener('click', () => {
@@ -7281,21 +7466,25 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const err = $('isFormErr'); err.className = 'ds-status err';
     const title = $('isFTitle').value.trim(), type = $('isFType').value;
     if (!title) { err.textContent = 'Title wajib diisi.'; return; }
-    const luasV = parseFloat(String($('isFLuas').value).replace(/\./g, '').replace(',', '.'));
-    const data = { title: title, status: $('isFStatus').value, desc: $('isFDesc').value.trim(), assignee: $('isFAssignee').value.trim(), company: $('isFCompany').value.trim(),
-      locDetail: $('isFLoc').value.trim(), start: $('isFStart').value || toISO(new Date()), due: $('isFDue').value, rootCause: $('isFRoot').value, noSpk: normNo($('isFSpk').value) };
+    const code = $('isFCode').value.trim().toUpperCase().replace(/\s+/g, '');
+    if (!code) { err.textContent = 'Kode Kerusakan wajib diisi (mis. ' + (isForm.suggest || 'R1') + ').'; $('isFCode').focus(); return; }
+    if (!CODE_RE.test(code)) { err.textContent = 'Format Kode Kerusakan: huruf type + nomor lokasi, mis. R1, S12, B3.2.'; $('isFCode').focus(); return; }
+    if (ruasCodes(rs.ruas, isForm.editId).some(c => String(c).toUpperCase() === code)) { err.textContent = 'Kode ' + code + ' sudah dipakai issue lain di ruas ini.'; $('isFCode').focus(); return; }
+    const data = { title: title, status: $('isFStatus').value, desc: $('isFDesc').value.trim(), assignee: $('isFAssignee').value.trim(),
+      locDetail: $('isFLoc').value.trim(), start: $('isFStart').value || toISO(new Date()), due: $('isFDue').value, rootCause: $('isFRoot').value };
     if (data.due && data.start && data.due < data.start) { err.textContent = 'Due date tidak boleh sebelum start date.'; return; }
     let t = isForm.editId && appIssues.list.find(x => x.id === isForm.editId);
     const p = isForm.placement, gps = p ? toGps(p.x, p.y) : null;
     if (t) {
       const changes = [];
-      ['title', 'status', 'assignee', 'company', 'start', 'due', 'rootCause', 'noSpk', 'desc', 'locDetail'].forEach(k => { if ((t[k] || '') !== (data[k] || '')) changes.push(k); });
+      ['title', 'status', 'assignee', 'start', 'due', 'rootCause', 'desc', 'locDetail'].forEach(k => { if ((t[k] || '') !== (data[k] || '')) changes.push(k); });
+      if (t.code !== code) { isLog(t, 'Kode Kerusakan ' + t.code + ' \u2192 ' + code); t.code = code; }
       if (t.status !== data.status && data.status === 'Closed') t.closedAt = toISO(new Date());
+      if (t.status !== data.status && data.status !== 'Closed') t.closedAt = '';
       if (t.status !== data.status) isLog(t, 'Status ' + t.status + ' \u2192 ' + data.status);
       Object.assign(t, data);
       if (t.src !== 'dwg') {
-        if (t.type !== type) { isLog(t, 'Type ' + t.type + ' \u2192 ' + type); t.type = type; t.code = letterFix(t.code, type); }
-        const nl = isNaN(luasV) ? 0 : luasV; if (nl !== (t.luas || 0)) { isLog(t, 'Luas ' + num(t.luas || 0, 3) + ' \u2192 ' + num(nl, 3) + ' m\u00b2'); t.luas = nl; }
+        if (t.type !== type) { isLog(t, 'Type ' + t.type + ' \u2192 ' + type); t.type = type; }
         if (p && (p.x !== t.x || p.y !== t.y)) { Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: t.firstV || p.fileV, lat: gps && gps.lat, lon: gps && gps.lon }); isLog(t, 'Penempatan di gambar diubah (V' + p.fileV + ')'); }
         if (!p && t.x != null) { delete t.x; delete t.y; t.fileId = null; isLog(t, 'Penempatan di gambar dihapus'); }
       }
@@ -7305,9 +7494,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       isPreviewCode();
       const host = isForm.host, rep = host && statusOfAi(host) === 'Closed';
       t = Object.assign({ id: 'ai' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ruas: rs.ruas, src: 'pin', active: true, num: isNextNum(rs.ruas),
-        code: $('isFCodeAuto').textContent, type: type, luas: isNaN(luasV) ? 0 : luasV, created: toISO(new Date()), note: '', repeat: !!rep, parentId: rep ? host.id : undefined,
+        code: code, type: type, luas: 0, created: toISO(new Date()), note: '', repeat: !!rep, parentId: rep ? host.id : undefined,
         log: [{ at: new Date().toISOString(), text: 'Issue dibuat' + (rep ? ' \u2014 kerusakan berulang di lokasi ' + host.code : '') }] }, data);
-      if (p) Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: p.fileV, lat: gps && gps.lat, lon: gps && gps.lon });
+      if (p) Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: p.fileV, lat: gps && gps.lat, lon: gps && gps.lon }, p.poly ? { poly: p.poly } : {});
       if (rep) { host.nextId = t.id; isLog(host, 'Rusak lagi \u2192 ' + t.code); }
       if (data.status === 'Closed') t.closedAt = toISO(new Date());
       appIssues.list.push(t);
@@ -7428,6 +7617,304 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       return { appIssues: ai, spk: spk, projects: pj, memIssues: appIssues.list.length };
     }
   };
+
+  // ============================================================
+  // PRATINJAU FILE (selain DWG) + BANDINGKAN VERSI
+  // Foto, PDF, Excel/CSV, Word, teks. Versi lama & baru bisa dilihat berdampingan,
+  // dengan perbedaan ditandai (sel Excel/CSV yang berubah, baris teks yang ditambah/dihapus, geser untuk foto).
+  // ============================================================
+  const MAMMOTH = 'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js';
+  function loadMammoth() {
+    return new Promise((res, rej) => {
+      if (window.mammoth) return res(window.mammoth);
+      const s = document.createElement('script'); s.src = MAMMOTH;
+      s.onload = () => res(window.mammoth); s.onerror = () => rej(new Error('Pembaca Word gagal dimuat (cek koneksi internet).'));
+      document.head.appendChild(s);
+    });
+  }
+  function fvKind(name, type) {
+    const n = String(name || '').toLowerCase();
+    if (/^image\//.test(type || '') || /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(n)) return 'image';
+    if (/\.pdf$/.test(n) || type === 'application/pdf') return 'pdf';
+    if (/\.(xlsx|xlsm|xls)$/.test(n)) return 'sheet';
+    if (/\.(csv|tsv)$/.test(n)) return 'csv';
+    if (/\.docx$/.test(n)) return 'docx';
+    if (/\.(txt|pnezd|xyz|json|md|log|xml|ini)$/.test(n) || /^text\//.test(type || '')) return 'text';
+    return 'other';
+  }
+  const fvUrls = [];
+  function fvUrl(blob) { const u = URL.createObjectURL(blob); fvUrls.push(u); return u; }
+  function fvFreeUrls() { while (fvUrls.length) URL.revokeObjectURL(fvUrls.pop()); }
+  async function fvBlob(f, v) { const ver = f.versions.find(x => x.v === v); if (!ver) return null; const b = await idbGet('blobs', ver.blobId); return b ? b.blob : null; }
+  // ----- isi file -> data yang bisa dibandingkan -----
+  async function fvSheet(blob, kind) {
+    const X = await loadSheetJs();
+    const wb = kind === 'csv' ? X.read(await blob.text(), { type: 'string' }) : X.read(await blob.arrayBuffer(), { type: 'array' });
+    const out = {};
+    wb.SheetNames.forEach(n => { out[n] = X.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '', raw: false, blankrows: false }); });
+    return { names: wb.SheetNames, sheets: out };
+  }
+  async function fvText(blob, kind) {
+    if (kind === 'docx') { const m = await loadMammoth(); const ab = await blob.arrayBuffer(); const html = (await m.convertToHtml({ arrayBuffer: ab })).value; const txt = (await m.extractRawText({ arrayBuffer: ab })).value; return { html: html, lines: txt.split(/\r?\n/) }; }
+    const t = await blob.text(); return { html: null, lines: t.split(/\r?\n/) };
+  }
+  // diff baris (LCS); untuk file sangat panjang dibatasi
+  function lineDiff(a, b) {
+    const n = a.length, m = b.length;
+    if (n * m > 4e6) return null;
+    const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const out = []; let i = 0, j = 0;
+    while (i < n && j < m) { if (a[i] === b[j]) { out.push(['=', a[i]]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push(['-', a[i]]); i++; } else { out.push(['+', b[j]]); j++; } }
+    while (i < n) out.push(['-', a[i++]]); while (j < m) out.push(['+', b[j++]]);
+    return out;
+  }
+  function sheetTable(rows, other, side) {
+    const maxR = Math.min(rows.length, 1000), maxC = Math.min(Math.max(1, ...rows.slice(0, maxR).map(r => r.length)), 60);
+    let changed = 0, h = '<table class="fv-sheet"><tbody>';
+    for (let r = 0; r < maxR; r++) {
+      h += '<tr><th>' + (r + 1) + '</th>';
+      for (let c = 0; c < maxC; c++) {
+        const v = rows[r] && rows[r][c] != null ? String(rows[r][c]) : '';
+        const o = other ? (other[r] && other[r][c] != null ? String(other[r][c]) : '') : v;
+        const diff = other && v !== o; if (diff) changed++;
+        h += '<td' + (diff ? ' class="fv-chg ' + side + '" title="' + (side === 'b' ? 'Sebelumnya: ' : 'Sesudahnya: ') + esc(o) + '"' : '') + '>' + esc(v) + '</td>';
+      }
+      h += '</tr>';
+    }
+    h += '</tbody></table>' + (rows.length > maxR ? '<p class="foot-note">Menampilkan 1.000 baris pertama dari ' + rows.length + '.</p>' : '');
+    return { html: h, changed: changed };
+  }
+  // ----- modal -----
+  const fvm = document.createElement('div');
+  fvm.className = 'v2-modal fv-modal'; fvm.id = 'fileViewModal'; fvm.hidden = true;
+  fvm.innerHTML = '<div class="v2-modal-box fv-box" role="dialog" aria-modal="true" aria-labelledby="fvvTitle">' +
+    '<div class="fv-head"><div class="fv-title"><h3 id="fvvTitle">File</h3><p class="sub" id="fvvSub"></p></div>' +
+    '<div class="fv-ctrl"><label>Versi <select id="fvvA"></select></label><label>Bandingkan dengan <select id="fvvB"></select></label>' +
+    '<select id="fvvSheet" hidden aria-label="Sheet"></select><div class="segment-group" id="fvvMode" hidden><button type="button" class="ds-seg active" data-m="side">Berdampingan</button><button type="button" class="ds-seg" data-m="slide">Geser</button></div>' +
+    '<button type="button" class="btn-ghost" id="fvvDl">Download</button><button type="button" class="v2-close" data-close aria-label="Tutup">&times;</button></div></div>' +
+    '<p class="fv-sum" id="fvvSum" hidden></p><div class="fv-body" id="fvvBody"></div></div>';
+  document.body.appendChild(fvm);
+  const fv = { f: null, a: null, b: null, mode: 'side', sheet: null, cache: {} };
+  function fvClose() { fvm.hidden = true; fvFreeUrls(); fv.cache = {}; }
+  fvm.addEventListener('click', e => { if (e.target === fvm || e.target.closest('[data-close]')) fvClose(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !fvm.hidden && !document.querySelector('.ui-dialog')) fvClose(); });
+  function fvOpen(fileId, v) {
+    const f = rs.files.find(x => x.id === fileId); if (!f) return;
+    fv.f = f; fv.a = v || f.versions[f.versions.length - 1].v; fv.b = null; fv.mode = 'side'; fv.sheet = null; fv.cache = {};
+    const opts = f.versions.slice().reverse().map(x => '<option value="' + x.v + '">V' + x.v + ' \u00b7 ' + fmtWaktu(x.date) + (x.note ? ' \u00b7 ' + esc(x.note.slice(0, 40)) : '') + '</option>').join('');
+    $('fvvA').innerHTML = opts; $('fvvA').value = fv.a;
+    $('fvvB').innerHTML = '<option value="">\u2014 tidak \u2014</option>' + opts; $('fvvB').value = '';
+    $('fvvB').disabled = f.versions.length < 2; $('fvvB').title = f.versions.length < 2 ? 'Baru ada 1 versi' : '';
+    $('fvvTitle').textContent = f.name;
+    fvm.hidden = false; fvRender();
+  }
+  window.openFileViewer = fvOpen;
+  $('fvvA').addEventListener('change', e => { fv.a = parseInt(e.target.value, 10); fvRender(); });
+  $('fvvB').addEventListener('change', e => { fv.b = e.target.value ? parseInt(e.target.value, 10) : null; fvRender(); });
+  $('fvvSheet').addEventListener('change', e => { fv.sheet = e.target.value; fvRender(); });
+  $('fvvMode').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; fv.mode = b.dataset.m; document.querySelectorAll('#fvvMode .ds-seg').forEach(x => x.classList.toggle('active', x === b)); fvRender(); });
+  $('fvvDl').addEventListener('click', () => rsDownload(fv.f.id, fv.a));
+  async function fvData(v, kind) {
+    const k = v + '|' + kind; if (fv.cache[k]) return fv.cache[k];
+    const blob = await fvBlob(fv.f, v); if (!blob) throw new Error('File versi V' + v + ' tidak ditemukan di penyimpanan browser.');
+    let d;
+    if (kind === 'sheet' || kind === 'csv') d = await fvSheet(blob, kind);
+    else if (kind === 'text' || kind === 'docx') d = await fvText(blob, kind);
+    else d = { url: fvUrl(blob) };
+    fv.cache[k] = d; return d;
+  }
+  async function fvRender() {
+    const f = fv.f, verA = f.versions.find(x => x.v === fv.a), kind = fvKind(f.name, verA && verA.type);
+    const body = $('fvvBody'), sum = $('fvvSum');
+    const ver = v => f.versions.find(x => x.v === v);
+    $('fvvSub').textContent = 'V' + fv.a + ' \u00b7 ' + fmtSize(verA.size) + ' \u00b7 diupload ' + fmtWaktu(verA.date) + (fv.b ? ' \u2014 dibandingkan dengan V' + fv.b : '');
+    $('fvvMode').hidden = !(kind === 'image' && fv.b);
+    $('fvvSheet').hidden = !(kind === 'sheet');
+    sum.hidden = true; body.className = 'fv-body'; body.innerHTML = '<div class="fv-loading"><span class="spin"></span> Membuka file\u2026</div>';
+    try {
+      if (kind === 'other') { body.innerHTML = '<div class="fv-empty"><b>Pratinjau belum tersedia untuk tipe file ini</b><span>' + esc(f.name.split('.').pop().toUpperCase()) + ' \u00b7 gunakan tombol Download untuk membukanya di aplikasi lain.</span></div>'; return; }
+      const vs = fv.b ? [fv.b, fv.a].sort((x, y) => x - y) : [fv.a];   // kiri = versi lebih lama
+      const ds = []; for (const v of vs) ds.push(await fvData(v, kind));
+      const label = v => '<div class="fv-pane-h"><span class="rs-vchip">V' + v + '</span> ' + fmtWaktu(ver(v).date) + (ver(v).note ? ' \u00b7 ' + esc(ver(v).note) : '') + '</div>';
+      if (kind === 'image') {
+        if (fv.b && fv.mode === 'slide') {
+          body.innerHTML = '<div class="fv-slide"><div class="fv-slide-h"><span>\u2190 <span class="rs-vchip">V' + vs[0] + '</span></span><span><span class="rs-vchip">V' + vs[1] + '</span> \u2192</span></div><div class="fv-slide-wrap" id="fvSlide"><img src="' + ds[1].url + '" alt=""><div class="fv-slide-top" id="fvSlideTop"><img src="' + ds[0].url + '" alt=""></div><div class="fv-slide-bar" id="fvSlideBar"></div></div><input type="range" id="fvSlideR" min="0" max="100" value="50" aria-label="Geser pembanding"></div>';
+          const set = p => { $('fvSlideTop').style.width = p + '%'; $('fvSlideBar').style.left = p + '%'; };
+          $('fvSlideR').addEventListener('input', e => set(e.target.value)); set(50);
+          const im = $('fvSlideTop').querySelector('img'); const fit = () => { im.style.width = $('fvSlide').clientWidth + 'px'; }; fit(); window.addEventListener('resize', fit, { once: true });
+        } else body.innerHTML = '<div class="fv-panes">' + vs.map((v, i) => '<div class="fv-pane">' + (fv.b ? label(v) : '') + '<div class="fv-img"><img src="' + ds[i].url + '" alt="' + esc(f.name) + '"></div></div>').join('') + '</div>';
+      } else if (kind === 'pdf') {
+        body.innerHTML = '<div class="fv-panes">' + vs.map((v, i) => '<div class="fv-pane fv-pdf">' + (fv.b ? label(v) : '') + '<iframe src="' + ds[i].url + '" title="PDF V' + v + '"></iframe></div>').join('') + '</div>';
+        if (fv.b) { sum.hidden = false; sum.textContent = 'PDF ditampilkan berdampingan. Perbedaan isi PDF tidak ditandai otomatis \u2014 bandingkan secara visual.'; }
+      } else if (kind === 'sheet' || kind === 'csv') {
+        const names = ds[ds.length - 1].names;
+        if (kind === 'sheet') { $('fvvSheet').innerHTML = names.map(n => '<option>' + esc(n) + '</option>').join(''); if (!names.includes(fv.sheet)) fv.sheet = names[0]; $('fvvSheet').value = fv.sheet; }
+        const sh = kind === 'csv' ? names[0] : fv.sheet;
+        const rowsOf = d => d.sheets[sh] || d.sheets[d.names[0]] || [];
+        if (fv.b) {
+          const L = sheetTable(rowsOf(ds[0]), rowsOf(ds[1]), 'a'), R = sheetTable(rowsOf(ds[1]), rowsOf(ds[0]), 'b');
+          sum.hidden = false; sum.innerHTML = R.changed ? '<b>' + R.changed + ' sel berbeda</b> antara V' + vs[0] + ' dan V' + vs[1] + (kind === 'sheet' ? ' di sheet "' + esc(sh) + '"' : '') + '. Sel kuning = berubah (arahkan kursor untuk melihat nilai di versi lain).' : 'Tidak ada perbedaan isi di ' + (kind === 'sheet' ? 'sheet "' + esc(sh) + '"' : 'file ini') + '.';
+          body.innerHTML = '<div class="fv-panes">' + [L, R].map((t, i) => '<div class="fv-pane">' + label(vs[i]) + '<div class="fv-scroll">' + t.html + '</div></div>').join('') + '</div>';
+          const sc = body.querySelectorAll('.fv-scroll'); sc.forEach((s, i) => s.addEventListener('scroll', () => { const o = sc[1 - i]; if (o.scrollTop !== s.scrollTop) o.scrollTop = s.scrollTop; if (o.scrollLeft !== s.scrollLeft) o.scrollLeft = s.scrollLeft; }));
+        } else body.innerHTML = '<div class="fv-scroll fv-full">' + sheetTable(rowsOf(ds[0]), null).html + '</div>';
+      } else {
+        if (fv.b) {
+          const df = lineDiff(ds[0].lines, ds[1].lines);
+          if (!df) { body.innerHTML = '<div class="fv-panes">' + ds.map((d, i) => '<div class="fv-pane">' + label(vs[i]) + '<pre class="fv-pre">' + esc(d.lines.join('\n')) + '</pre></div>').join('') + '</div>'; sum.hidden = false; sum.textContent = 'File terlalu panjang untuk ditandai perbedaannya; ditampilkan berdampingan.'; return; }
+          const add = df.filter(x => x[0] === '+').length, del = df.filter(x => x[0] === '-').length;
+          sum.hidden = false; sum.innerHTML = add || del ? '<b class="fv-add">+' + add + ' baris</b> ditambah, <b class="fv-del">\u2212' + del + ' baris</b> dihapus dari V' + vs[0] + ' ke V' + vs[1] + '.' : 'Tidak ada perbedaan teks antara V' + vs[0] + ' dan V' + vs[1] + '.';
+          body.innerHTML = '<div class="fv-diff">' + df.map(x => '<div class="fv-ln ' + (x[0] === '+' ? 'add' : x[0] === '-' ? 'del' : '') + '"><span>' + (x[0] === '=' ? ' ' : x[0] === '+' ? '+' : '\u2212') + '</span>' + (esc(x[1]) || '&nbsp;') + '</div>').join('') + '</div>';
+        } else if (ds[0].html) body.innerHTML = '<div class="fv-doc">' + ds[0].html + '</div>';
+        else body.innerHTML = '<pre class="fv-pre fv-full">' + esc(ds[0].lines.join('\n')) + '</pre>';
+      }
+    } catch (err) { body.innerHTML = '<div class="fv-empty"><b>File tidak bisa ditampilkan</b><span>' + esc(err.message || String(err)) + '</span></div>'; }
+  }
+
+  // ============================================================
+  // INTEGRASI DATA EKSTERNAL (tarik API): Luas, Company, No SPK per issue + daftar SPK
+  // Sambungan disimpan di browser ini saja (bukan di file HTML), jadi aman walau repo GitHub publik.
+  // Selama API belum ada, bisa diuji dengan file JSON berformat sama.
+  // ============================================================
+  const IG_KEY = 'damageRoad.integrasi.v1';
+  function igLoad() { try { return JSON.parse(localStorage.getItem(IG_KEY) || 'null') || {}; } catch (e) { return {}; } }
+  function igSave(o) { try { localStorage.setItem(IG_KEY, JSON.stringify(o)); } catch (e) { /* abaikan */ } }
+  const pick = (o, keys) => { for (const k of keys) { if (o && o[k] != null && o[k] !== '') return o[k]; } return null; };
+  const normCode = c => String(c || '').toUpperCase().replace(/\s+/g, '');
+  const normRuas = r => String(r || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  // Terapkan data dari API / file uji. Format yang diterima:
+  //   { "issues": [ { "ruas": "Row 40B", "kode_kerusakan": "R1", "luas": 140.819, "company": "BSD TM", "no_spk": "4400007066" } ],
+  //     "spk":    [ { "no_spk": "4400007066", "tanggal_spk": "2026-08-26", "nilai_dpp": 133486000, "ruas": ["Row 40B"],
+  //                   "tanggal_mulai": "2026-09-09", "tanggal_selesai": "2026-10-02", "vendor": "PT ...", "nama_pekerjaan": "...", "wbs": "..." } ] }
+  function igApply(payload) {
+    aiEnsure();
+    const res = { issueRows: 0, issueMatched: 0, issueUnmatched: [], spkRows: 0, spkNew: 0, spkUpd: 0 };
+    const issues = Array.isArray(payload) ? payload : (payload.issues || payload.kerusakan || payload.data || []);
+    const spks = Array.isArray(payload) ? [] : (payload.spk || payload.spks || []);
+    const now = new Date().toISOString();
+    issues.forEach(r => {
+      res.issueRows++;
+      const ruas = pick(r, ['ruas', 'row', 'ruas_jalan', 'nama_ruas']), code = normCode(pick(r, ['kode_kerusakan', 'kodeKerusakan', 'kode', 'code']));
+      if (!ruas || !code) { res.issueUnmatched.push((ruas || '?') + ' ' + (code || '?')); return; }
+      const t = appIssues.list.find(x => !x.linkedKey && normRuas(x.ruas) === normRuas(ruas) && normCode(x.code) === code);
+      if (!t) { res.issueUnmatched.push(ruas + ' ' + code); return; }
+      const luas = pick(r, ['luas', 'luas_m2', 'area']), comp = pick(r, ['company', 'perusahaan', 'kontraktor', 'vendor']), spk = pick(r, ['no_spk', 'noSpk', 'nomor_spk', 'spk']);
+      const old = t.ext || {};
+      t.ext = { luas: luas != null ? parseRupiahInput(luas) : old.luas, company: comp != null ? String(comp) : old.company, noSpk: spk != null ? normNo(spk) : old.noSpk, at: now };
+      const ch = [];
+      if (old.luas !== t.ext.luas) ch.push('luas ' + num(t.ext.luas || 0, 3) + ' m\u00b2');
+      if (old.company !== t.ext.company) ch.push('company ' + (t.ext.company || '\u2013'));
+      if (old.noSpk !== t.ext.noSpk) ch.push('No SPK ' + (t.ext.noSpk || '\u2013'));
+      if (ch.length) isLog(t, 'Data API: ' + ch.join(', '));
+      res.issueMatched++;
+    });
+    const known = knownRuasList(model ? model.issues : []);
+    spks.forEach(r => {
+      res.spkRows++;
+      const no = normNo(pick(r, ['no_spk', 'noSpk', 'nomor_spk', 'spk'])); if (!no) return;
+      const ruasRaw = pick(r, ['ruas', 'ruas_jalan', 'row']);
+      const ruas = Array.isArray(ruasRaw) ? ruasRaw.map(String) : ruasRaw ? String(ruasRaw).split(/\s*[,;]\s*/) : [];
+      const nama = String(pick(r, ['nama_pekerjaan', 'nama', 'pekerjaan', 'deskripsi']) || '');
+      const tgl = parseAnyDate(pick(r, ['tanggal_spk', 'tanggal', 'tgl_spk']));
+      const mulai = parseAnyDate(pick(r, ['tanggal_mulai', 'mulai', 'start', 'start_date'])), selesai = parseAnyDate(pick(r, ['tanggal_selesai', 'selesai', 'end', 'finish', 'due_date']));
+      const existing = Object.values(store.spks).find(s => normNo(s.no) === no);
+      const data = {
+        no: no, tanggal: tgl ? toISO(tgl) : (existing ? existing.tanggal : ''), nama: nama || (existing ? existing.nama : ''), jenis: pick(r, ['jenis', 'jenis_pekerjaan']) || (existing ? existing.jenis : jenisOf(nama)),
+        ruas: ruas.length ? ruas : (existing && existing.ruas.length ? existing.ruas : detectRuas(nama, known)), ruasAuto: !ruas.length,
+        nilai: pick(r, ['nilai_dpp', 'dpp', 'nilai']) != null ? parseRupiahInput(pick(r, ['nilai_dpp', 'dpp', 'nilai'])) : (existing ? existing.nilai : 0),
+        nilaiPpn: pick(r, ['nilai_ppn', 'nilai_spk', 'ppn']) != null ? parseRupiahInput(pick(r, ['nilai_ppn', 'nilai_spk', 'ppn'])) : (existing ? existing.nilaiPpn : 0),
+        vendor: pick(r, ['vendor', 'kontraktor']) || (existing ? existing.vendor : ''), wbs: pick(r, ['wbs', 'wbs_budget']) || (existing ? existing.wbs : ''),
+        mulai: mulai ? toISO(mulai) : (existing ? existing.mulai || '' : ''), selesai: selesai ? toISO(selesai) : (existing ? existing.selesai || '' : ''), apiAt: now
+      };
+      if (existing) { Object.assign(existing, data); res.spkUpd++; }
+      else { const id = 'API|' + no; store.spks[id] = Object.assign({ id: id, company: '', source: 'api', area: '', ket: '' }, data); res.spkNew++; }
+    });
+    if (spks.length && store.isDemo) store.isDemo = false;
+    aiSave(); saveStore(); injectAppIssues(); recomputeAllSafe();
+    const cfg = igLoad(); cfg.lastSync = now; cfg.lastResult = res; igSave(cfg);
+    return res;
+  }
+  function igSummary(r) {
+    return 'Issue: ' + r.issueMatched + ' dari ' + r.issueRows + ' baris cocok' + (r.issueUnmatched.length ? ' (' + r.issueUnmatched.length + ' tidak ditemukan: ' + r.issueUnmatched.slice(0, 5).join(', ') + (r.issueUnmatched.length > 5 ? ', \u2026' : '') + ')' : '') +
+      ' \u00b7 SPK: ' + r.spkRows + ' baris (' + r.spkNew + ' baru, ' + r.spkUpd + ' diperbarui).';
+  }
+  async function igFetch(url, token) {
+    const h = { Accept: 'application/json' }; if (token) h.Authorization = 'Bearer ' + token;
+    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 20000);
+    try {
+      const r = await fetch(url, { headers: h, signal: ctl.signal });
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' dari ' + url);
+      return await r.json();
+    } catch (e) {
+      throw new Error(e.name === 'AbortError' ? 'API tidak merespons dalam 20 detik (' + url + ')' : (/Failed to fetch|NetworkError/i.test(e.message) ? 'Tidak bisa menghubungi ' + url + ' \u2014 cek alamat, koneksi, HTTPS, dan izin CORS di server API.' : e.message));
+    } finally { clearTimeout(to); }
+  }
+  async function igSync() {
+    const c = igLoad();
+    if (!c.issueUrl && !c.spkUrl) throw new Error('Alamat API belum diisi.');
+    const payload = { issues: [], spk: [] };
+    if (c.issueUrl) { const d = await igFetch(c.issueUrl, c.token); payload.issues = Array.isArray(d) ? d : (d.issues || d.data || []); }
+    if (c.spkUrl) { const d = await igFetch(c.spkUrl, c.token); payload.spk = Array.isArray(d) ? d : (d.spk || d.data || []); }
+    return igApply(payload);
+  }
+  // ---------- jendela pengaturan ----------
+  const igModal = document.createElement('div');
+  igModal.className = 'v2-modal'; igModal.id = 'igModal'; igModal.hidden = true;
+  igModal.innerHTML = '<div class="v2-modal-box" role="dialog" aria-modal="true" aria-labelledby="igTitle" style="width:640px;">' +
+    '<div class="v2-modal-head"><div><h3 id="igTitle">Integrasi data eksternal (API)</h3><p class="sub" style="margin:2px 0 0;"><b>Luas</b>, <b>Company</b>, dan <b>No SPK</b> tiap issue, serta daftar <b>SPK</b>, diisi otomatis dari sistem lain. Issue dicocokkan berdasarkan <b>ruas + Kode Kerusakan</b>.</p></div>' +
+    '<button type="button" class="v2-close" data-close aria-label="Tutup">&times;</button></div>' +
+    '<div class="form-grid">' +
+    '<label class="span-2">Alamat API data kerusakan (luas, company, No SPK)<input type="url" id="igIssueUrl" placeholder="https://api.kantor.co.id/damage-road/kerusakan" autocomplete="off"></label>' +
+    '<label class="span-2">Alamat API daftar SPK<input type="url" id="igSpkUrl" placeholder="https://api.kantor.co.id/damage-road/spk" autocomplete="off"></label>' +
+    '<label class="span-2">Token akses (opsional)<input type="password" id="igToken" autocomplete="off" placeholder="disimpan di browser ini saja, tidak masuk ke file / GitHub"></label>' +
+    '<label class="span-2 ig-check"><input type="checkbox" id="igAuto"> Tarik data otomatis setiap aplikasi dibuka</label>' +
+    '</div>' +
+    '<div class="bk-acts"><button type="button" class="upload-btn" id="igSync">&#x21bb; Tarik data sekarang</button><button type="button" class="btn-ghost" id="igSaveBtn">Simpan pengaturan</button>' +
+    '<label class="btn-ghost" style="cursor:pointer;">Uji dengan file JSON<input type="file" id="igFile" accept=".json,application/json" hidden></label>' +
+    '<button type="button" class="btn-ghost" id="igSample">Contoh format JSON</button></div>' +
+    '<p class="ds-status" id="igStatus"></p><p class="foot-note" id="igLast"></p>' +
+    '<p class="foot-note">Syarat API: HTTPS, mengizinkan akses dari alamat aplikasi ini (CORS), dan mengembalikan JSON. Selama API belum ada, gunakan <b>Uji dengan file JSON</b> dengan format yang sama untuk mencoba alurnya.</p>' +
+    '<div class="v2-modal-foot"><button type="button" class="btn-ghost" data-close>Tutup</button></div></div>';
+  document.body.appendChild(igModal);
+  igModal.addEventListener('click', e => { if (e.target === igModal || e.target.closest('[data-close]')) igModal.hidden = true; });
+  function igStatus(m, ok) { const el = $('igStatus'); el.className = 'ds-status ' + (ok ? 'ok' : 'err'); el.textContent = m; }
+  function igOpen() {
+    const c = igLoad();
+    $('igIssueUrl').value = c.issueUrl || ''; $('igSpkUrl').value = c.spkUrl || ''; $('igToken').value = c.token || ''; $('igAuto').checked = !!c.auto;
+    $('igStatus').textContent = '';
+    $('igLast').innerHTML = c.lastSync ? 'Tarikan terakhir: <b>' + fmtWaktu(c.lastSync) + '</b>' + (c.lastResult ? ' \u2014 ' + esc(igSummary(c.lastResult)) : '') : 'Belum pernah menarik data.';
+    igModal.hidden = false;
+  }
+  window.openIntegrasi = igOpen;
+  const igCollect = () => { const c = igLoad(); c.issueUrl = $('igIssueUrl').value.trim(); c.spkUrl = $('igSpkUrl').value.trim(); c.token = $('igToken').value; c.auto = $('igAuto').checked; return c; };
+  $('igSaveBtn').addEventListener('click', () => { const c = igCollect(); if ((c.issueUrl && !/^https:\/\//i.test(c.issueUrl)) || (c.spkUrl && !/^https:\/\//i.test(c.spkUrl))) { igStatus('Alamat API harus diawali https:// (aplikasi berjalan di HTTPS).', false); return; } igSave(c); igStatus('Pengaturan disimpan di browser ini.', true); });
+  $('igSync').addEventListener('click', async () => {
+    const c = igCollect(); igSave(c);
+    $('igSync').disabled = true; igStatus('Menarik data\u2026', true);
+    try { const r = await igSync(); igStatus('Selesai. ' + igSummary(r), !r.issueUnmatched.length); igOpen(); igStatus('Selesai. ' + igSummary(r), !r.issueUnmatched.length); }
+    catch (e) { igStatus(e.message || String(e), false); }
+    $('igSync').disabled = false;
+  });
+  $('igFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try { const d = JSON.parse(await f.text()); const r = igApply(d); igStatus('Data uji diterapkan. ' + igSummary(r), !r.issueUnmatched.length); }
+    catch (err) { igStatus('File JSON tidak valid: ' + (err.message || err), false); }
+  });
+  $('igSample').addEventListener('click', () => {
+    const sample = { issues: [{ ruas: 'Row 40B', kode_kerusakan: 'R1', luas: 140.819, company: 'BSD TM', no_spk: '4400007066' }],
+      spk: [{ no_spk: '4400007066', tanggal_spk: '2026-08-26', nilai_dpp: 133486000, nilai_ppn: 148169460, ruas: ['Row 40B'], tanggal_mulai: '2026-09-09', tanggal_selesai: '2026-10-02', vendor: 'PT Contoh', nama_pekerjaan: 'Perbaikan Jalan di Row 40B', wbs: 'O.30-26-SL-IB-XB-CR-CU', jenis: 'Jalan' }] };
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' })); a.download = 'contoh-format-api-damage-road.json';
+    document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 800);
+  });
+  (function igMenu() {
+    const ul = document.querySelector('#sidebarGroupData .sidebar-sublist'); if (!ul) return;
+    const li = document.createElement('li');
+    li.innerHTML = '<button type="button" class="sidebar-link" id="igOpenBtn">Integrasi data eksternal (API)</button>';
+    ul.insertBefore(li, ul.children[1] || null);
+    $('igOpenBtn').addEventListener('click', igOpen);
+  })();
+  // tarik otomatis saat dibuka (kalau diaktifkan)
+  setTimeout(() => { const c = igLoad(); if (c.auto && (c.issueUrl || c.spkUrl)) igSync().then(r => pjToast('Data API diperbarui. ' + igSummary(r))).catch(e => pjToast('Gagal menarik data API: ' + (e.message || e))); }, 1500);
 
   // ---------- orkestrasi ----------
   function refresh() {
