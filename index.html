@@ -1083,6 +1083,9 @@
   .rs-canvas .rs-mapctl { bottom: 52px; }
   .at-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-700); background: #e8eefd; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
   .at-toggle input { accent-color: var(--accent); width: 15px; height: 15px; }
+  .lf-txt { background: none; border: none; pointer-events: none; }
+  .lf-txt span { display: inline-block; white-space: nowrap; transform-origin: 0 100%; color: #ef4444; font-family: Inter, Arial, sans-serif; font-weight: 600; line-height: 1;
+    text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px rgba(255,255,255,.9); }
 </style>
 </head>
 <body>
@@ -7049,6 +7052,23 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       html: '<svg width="' + w + '" height="' + h + '" viewBox="0 0 26 36"' + (opts.faded ? ' opacity=".6"' : '') + '><path d="M13 35 C13 35 25 20 25 12.5 A12 12 0 1 0 1 12.5 C1 20 13 35 13 35Z" fill="' + color + '" stroke="#fff" stroke-width="2"/><text x="13" y="17" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="Inter,Arial,sans-serif">' + esc(letter) + '</text></svg>' });
   }
   const ll = (x, y) => { const g = toGps(x, y); return g ? [g.lat, g.lon] : null; };
+  // ukuran huruf label = tinggi teks di gambar (meter) x piksel-per-meter pada zoom saat ini
+  function rsMapTexts() {
+    if (!rs.lmap || !rs.lmap._loaded) return;   // peta belum punya posisi (dipanggil lagi setelah fitBounds lewat 'zoomend')
+    const L = window.L;
+    if (!rs.ltxt) rs.ltxt = L.layerGroup().addTo(rs.lmap);
+    rs.ltxt.clearLayers();
+    const z = rs.lmap.getZoom(), c = rs.lmap.getCenter();
+    const pxPerM = 256 * Math.pow(2, z) / (40075016.686 * Math.cos(c.lat * Math.PI / 180));
+    const op = parseFloat(($('rsMapOp') || {}).value || '0.85');
+    (rs.ltxtData || []).forEach(x => {
+      // teks di gambar biasanya kecil (mis. 0,4 m) -> di peta dibuat minimal 12 px supaya terbaca; disembunyikan saat peta terlalu jauh
+      if (z < 17) return;
+      const size = Math.min(Math.max(x.t.h * pxPerM, 12), 64), rot = -(x.t.r || 0) * 180 / Math.PI;
+      L.marker(x.at, { interactive: false, keyboard: false, icon: L.divIcon({ className: 'lf-txt', iconSize: [0, 0], iconAnchor: [0, 0],
+        html: '<span style="font-size:' + size.toFixed(1) + 'px;opacity:' + Math.max(op, 0.6) + ';transform:translateY(-100%) rotate(' + rot.toFixed(1) + 'deg)">' + esc(x.t.t) + '</span>' }) }).addTo(rs.ltxt);
+    });
+  }
   async function rsSetMapMode(on) {
     rs.mapMode = on;
     const b = $('rsMapBtn'); if (b) { b.classList.toggle('on', on); b.innerHTML = on ? '&#9998; Kembali ke gambar' : '&#127758; Superimpose peta'; }
@@ -7065,6 +7085,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       rs.lbase = baseLayers(L); rs.lbase['Satelit'].addTo(rs.lmap);
       L.control.layers(rs.lbase, null, { position: 'topleft' }).addTo(rs.lmap);
       rs.ldwg = L.layerGroup().addTo(rs.lmap); rs.lpins = L.layerGroup().addTo(rs.lmap);
+      rs.lmap.on('zoomend', rsMapTexts);
     }
     setTimeout(() => { rs.lmap.invalidateSize(); rsMapRender(true); }, 60);
   }
@@ -7081,6 +7102,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     };
     rsOvlKeys().forEach(k => { if (rs.ovl[k].g) drawGeom(rs.ovl[k].g, rs.ovl[k].color, false); });
     drawGeom(rs.geom, null, true);
+    // label teks dari DWG (mis. angka luas 13.337) ikut tampil di peta, ukurannya mengikuti zoom
+    rs.ltxtData = (rs.geom.texts || []).filter(t => Math.hypot(t.p[0] - cx, t.p[1] - cy) < R).map(t => ({ t: t, at: ll(t.p[0], t.p[1]) })).filter(x => x.at);
+    rsMapTexts();
     const pinsOf = (v, faded, color) => rsIssuesOfVersion(rs.viewFile, v).forEach(t => {
       const p = ll(t.x, t.y); if (!p) return;
       const it = isItemFromApp(t);
