@@ -1041,6 +1041,13 @@
   .ig-check { flex-direction: row !important; align-items: center; gap: 8px !important; font-weight: 500 !important; }
   @media screen and (max-width: 640px) { .fv-box { height: 96vh; padding: 12px; } .fv-ctrl { width: 100%; } .fv-ctrl label { flex: 1 1 45%; } .fv-ctrl select { flex: 1; max-width: none; } }
   .is-codeline input::placeholder { text-transform: none; }
+  .pj-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: -4px 0 10px; }
+  .pj-tab { font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-500); background: none; border: none; border-bottom: 2px solid transparent; padding: 9px 14px; cursor: pointer; }
+  .pj-tab span { display: inline-block; min-width: 20px; font-size: 11px; background: var(--bg-sunken); border-radius: 10px; padding: 1px 6px; margin-left: 4px; }
+  .pj-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .pj-arsip-note { font-size: 12.5px; background: var(--bg-sunken); border-radius: 9px; padding: 8px 12px; margin: 0 0 10px; }
+  .pj-arsip-note[hidden] { display: none; }
+  .pj-menu button[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -1940,7 +1947,7 @@
           <input id="pjSearch" type="text" class="bs-search-input" placeholder="Cari nama ruas, nama jalan, atau kode ruas...">
         </div>
         <select id="pjArea" class="pj-select" aria-label="Filter area"><option value="">Semua area</option><option value="Barat">Area Barat</option><option value="Timur">Area Timur</option><option value="-">Belum ditentukan</option></select>
-        <select id="pjStatus" class="pj-select" aria-label="Filter status"><option value="aktif">Aktif</option><option value="arsip">Diarsipkan</option><option value="all">Semua status</option></select>
+        <select id="pjStatus" hidden aria-hidden="true"><option value="aktif">Aktif</option><option value="arsip">Diarsipkan</option><option value="all">Semua</option></select>
         <select id="pjSort" class="pj-select" aria-label="Urutkan"><option value="number">Kode ruas (BSD0001&ndash;)</option><option value="created">Terbaru dibuat</option><option value="name">Nama ruas (A&ndash;Z)</option><option value="belum">Paling banyak belum SPK</option></select>
       </div>
     </div>
@@ -1953,6 +1960,11 @@
     </div>
 
     <div class="card">
+      <div class="pj-tabs" role="tablist">
+        <button type="button" class="pj-tab active" data-pjtab="aktif">Ruas aktif <span id="pjTabAktif">0</span></button>
+        <button type="button" class="pj-tab" data-pjtab="arsip">&#128451; Arsip <span id="pjTabArsip">0</span></button>
+      </div>
+      <p class="pj-arsip-note" id="pjArsipNote" hidden>Ruas di arsip tidak tampil di daftar ruas aktif. Dari sini ruas bisa <b>diaktifkan lagi</b> atau <b>dihapus permanen</b> lewat tombol &#8942;.</p>
       <div style="overflow-x:auto;">
         <table id="pjTable" style="min-width:960px;">
           <thead><tr><th>Nama ruas</th><th>Kode ruas</th><th>Area</th><th>Hub</th><th class="num">Titik kerusakan</th><th class="num">Belum SPK</th><th>Dibuat</th><th style="width:40px;"></th></tr></thead>
@@ -2002,6 +2014,7 @@
     <button type="button" data-act="edit" role="menuitem">Edit</button>
     <button type="button" data-act="spk" role="menuitem">Lihat titik &amp; SPK</button>
     <button type="button" data-act="arsip" role="menuitem" class="danger">Arsipkan</button>
+    <button type="button" data-act="hapus" role="menuitem" class="danger" hidden>Hapus permanen</button>
   </div>
 
   <!-- PAGE 7: DETAIL RUAS — Files, Gambar & titik, Titik kerusakan (tidak ikut dicetak) -->
@@ -5914,7 +5927,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
     const aktif = projects.list.filter(p => p.status === 'aktif');
     set('pjKpiTotal', aktif.length);
-    set('pjKpiArsip', projects.list.length - aktif.length ? (projects.list.length - aktif.length) + ' diarsipkan' : 'tidak ada yang diarsipkan');
+    const nArsip = projects.list.length - aktif.length;
+    const ka = $('pjKpiArsip'); if (ka) ka.innerHTML = nArsip ? '<button type="button" class="link-cell" data-pjtab="arsip">' + nArsip + ' diarsipkan \u2192 lihat arsip</button>' : 'tidak ada yang diarsipkan';
+    set('pjTabAktif', aktif.length); set('pjTabArsip', nArsip);
+    const stNow = ($('pjStatus') || {}).value || 'aktif';
+    document.querySelectorAll('.pj-tab').forEach(b => b.classList.toggle('active', b.dataset.pjtab === stNow));
+    const an = $('pjArsipNote'); if (an) an.hidden = stNow !== 'arsip';
     set('pjKpiBarat', aktif.filter(p => p.area === 'Barat').length);
     set('pjKpiTimur', aktif.filter(p => p.area === 'Timur').length);
     const noArea = aktif.filter(p => !p.area).length;
@@ -5946,9 +5964,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         (p.jalan ? '<span class="pj-s">' + esc(p.jalan) + '</span>' : '<span class="pj-s muted">Nama jalan belum diisi</span>') + '</span></button></td>' +
         '<td class="pj-no">' + esc(p.no) + '</td><td>' + (p.area ? 'Area ' + esc(p.area) : '<span style="color:var(--ink-400);">\u2013</span>') + (p.status === 'arsip' ? ' <span class="src-tag">arsip</span>' : '') + '</td>' +
         '<td>' + esc(p.hub || '\u2013') + '</td><td class="num">' + s.t + '</td><td class="num">' + (s.b ? '<span class="spk-none">' + s.b + '</span>' : '0') + '</td>' +
-        '<td style="white-space:nowrap;">' + fmtTgl(fromISO(p.created)) + '</td>' +
+        '<td style="white-space:nowrap;">' + (p.status === 'arsip' && p.archivedAt ? '<span class="is-hint">diarsipkan</span><br>' + fmtTgl(fromISO(p.archivedAt)) : fmtTgl(fromISO(p.created))) + '</td>' +
         '<td><button type="button" class="pj-more" data-menu="' + esc(p.id) + '" aria-label="Aksi untuk ' + esc(p.kode) + '">&#8942;</button></td></tr>';
-    }).join('') || '<tr><td colspan="8" style="text-align:center; color:var(--ink-400); padding:26px 8px;">Tidak ada ruas yang cocok.</td></tr>';
+    }).join('') || '<tr><td colspan="8" style="text-align:center; color:var(--ink-400); padding:26px 8px;">' + (status === 'arsip' ? 'Arsip kosong. Ruas yang diarsipkan akan muncul di sini.' : 'Tidak ada ruas yang cocok.') + '</td></tr>';
     set('pjFoot', list.length ? 'Menampilkan ' + (start + 1) + '\u2013' + Math.min(start + pjState.per, list.length) + ' dari ' + list.length + ' ruas' : 'Tidak ada ruas');
     set('pjPage', 'Hal ' + pjState.page + '/' + pages);
     if ($('pjPrev')) $('pjPrev').disabled = pjState.page <= 1;
@@ -6025,7 +6043,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       e.stopPropagation();
       pjMenuFor = more.dataset.menu;
       const p = projects.list.find(x => x.id === pjMenuFor);
-      pjMenu.querySelector('[data-act="arsip"]').textContent = p && p.status === 'arsip' ? 'Aktifkan lagi' : 'Arsipkan';
+      const isArc = p && p.status === 'arsip';
+      const ab = pjMenu.querySelector('[data-act="arsip"]'); ab.textContent = isArc ? 'Aktifkan lagi' : 'Arsipkan'; ab.classList.toggle('danger', !isArc);
+      pjMenu.querySelector('[data-act="hapus"]').hidden = !isArc;
       pjMenu.hidden = false;
       const r = more.getBoundingClientRect();
       const w = pjMenu.offsetWidth, h = pjMenu.offsetHeight;
@@ -6042,9 +6062,10 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       if (act.dataset.act === 'spk') pjGoSpk(p.kode);
       if (act.dataset.act === 'arsip') {
         const to = p.status === 'arsip' ? 'aktif' : 'arsip';
-        if (to === 'arsip') { uiConfirm('Arsipkan ' + p.kode + '? Ruas ini disembunyikan dari daftar aktif, data titiknya tidak dihapus.', { ok: 'Arsipkan' }).then(ok => { if (ok) { p.status = to; pjSave(); renderProjects(); pjToast(p.kode + ' diarsipkan.'); } }); return; }
-        p.status = to; pjSave(); renderProjects(); pjToast(p.kode + (to === 'arsip' ? ' diarsipkan.' : ' diaktifkan lagi.'));
+        if (to === 'arsip') { uiConfirm('Arsipkan ' + p.kode + '? Ruas ini dipindah ke tab Arsip (tidak tampil di daftar ruas aktif). Data titik & file-nya tidak dihapus, dan bisa diaktifkan lagi kapan saja.', { ok: 'Arsipkan' }).then(ok => { if (ok) { p.status = to; p.archivedAt = toISO(new Date()); pjSave(); pjSyncRuasList(); renderProjects(); pjToast(p.kode + ' diarsipkan.'); } }); return; }
+        p.status = to; delete p.archivedAt; pjSave(); pjSyncRuasList(); renderProjects(); pjToast(p.kode + ' diaktifkan lagi.');
       }
+      if (act.dataset.act === 'hapus') pjDeletePermanent(p);
       return;
     }
     const rowEl = e.target.closest('#pjBody tr[data-rowpj]');
@@ -6058,6 +6079,32 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const tr = e.target.closest('tr[data-rowpj]');
     if (tr && e.target === tr && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const p = projects.list.find(x => x.id === tr.dataset.rowpj); if (p) openRuas(p.kode); }
   });
+  document.addEventListener('click', e => {
+    const tb = e.target.closest('[data-pjtab]'); if (!tb) return;
+    $('pjStatus').value = tb.dataset.pjtab; pjState.page = 1; renderProjects();
+  });
+  async function pjDeletePermanent(p) {
+    aiEnsure();
+    const own = appIssues.list.filter(t => t.ruas === p.kode);
+    let files = [];
+    try { files = (await idbAll('files')).filter(f => f.ruas === p.kode); } catch (e) { files = []; }
+    const nVer = files.reduce((a, f) => a + f.versions.length, 0);
+    const ok = await uiConfirm('Hapus permanen ' + p.kode + (p.jalan ? ' (' + p.jalan + ')' : '') + '?\n\nIkut terhapus: ' + own.length + ' issue buatan aplikasi dan ' + files.length + ' file (' + nVer + ' versi) di ruas ini.' +
+      '\nData dari upload Forma dan data SPK tidak ikut terhapus.\n\nTindakan ini tidak bisa dibatalkan. Kalau ragu, download backup dulu (Kelola Data \u203a Backup & restore data).', { danger: true, ok: 'Hapus permanen' });
+    if (!ok) return;
+    // hapus file & versinya
+    for (const f of files) {
+      for (const v of f.versions) { try { await idbDel('blobs', v.blobId); } catch (e) { /* abaikan */ } try { await idbDel('geom', v.blobId); } catch (e) { /* abaikan */ } }
+      try { await idbDel('files', f.id); } catch (e) { /* abaikan */ }
+    }
+    // hapus issue aplikasi + lampirannya
+    for (const t of own) for (const a of (t.attachments || [])) { try { await idbDel('blobs', a.id); } catch (e) { /* abaikan */ } }
+    appIssues.list = appIssues.list.filter(t => t.ruas !== p.kode); aiSave();
+    projects.list = projects.list.filter(x => x.id !== p.id); pjSave();
+    if (typeof ALL_RUAS_LIST !== 'undefined') { const i = ALL_RUAS_LIST.indexOf(p.kode); if (i >= 0 && !(model && model.issues.some(x => x.ruas === p.kode && !String(x.key).startsWith('id:app:')))) ALL_RUAS_LIST.splice(i, 1); }
+    injectAppIssues(); recomputeAllSafe(); renderProjects();
+    pjToast(p.kode + ' dihapus permanen.');
+  }
   function pjGoSpk(kode) {
     goTo('spk');
     dsRuas = kode; selected.clear(); pager.dsSpk.page = 1; pager.dsIssue.page = 1;
