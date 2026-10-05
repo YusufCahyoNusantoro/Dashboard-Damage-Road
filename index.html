@@ -1048,6 +1048,41 @@
   .pj-arsip-note { font-size: 12.5px; background: var(--bg-sunken); border-radius: 9px; padding: 8px 12px; margin: 0 0 10px; }
   .pj-arsip-note[hidden] { display: none; }
   .pj-menu button[hidden] { display: none; }
+  /* superimpose versi & peta di viewer */
+  .rs-map { position: absolute; inset: 0; z-index: 2; }
+  .rs-map[hidden] { display: none; }
+  .rs-mapctl { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 3; background: rgba(255,255,255,.95); border-radius: 10px; padding: 6px 12px; font-size: 12px; box-shadow: 0 4px 14px rgba(16,24,42,.15); }
+  .rs-mapctl[hidden] { display: none; }
+  .rs-mapctl label { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink-700); }
+  .rs-canvas .rs-side { z-index: 4; }
+  .ovl-legend { position: absolute; left: 10px; top: 10px; z-index: 3; display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 11.5px; }
+  .ovl-legend[hidden] { display: none; }
+  .ovl-l { display: flex; align-items: center; gap: 6px; }
+  .ovl-l i { width: 14px; height: 10px; border: 2px dashed; border-radius: 3px; display: inline-block; }
+  .ovl-l.base i { border: 2px solid #b91c1c; background: #22c55e; }
+  #rsMapBtn.on { background: var(--ink-900); color: #fff; border-color: var(--ink-900); }
+  .lf-pin { background: none; border: none; }
+  .rs-vtools { flex-wrap: wrap; }
+  /* halaman peta */
+  body[data-active-page="peta"] #downloadReportBtn { display: none !important; }
+  @media print { .page[data-page="peta"] { display: none !important; } }
+  .pt-card { padding: 12px; }
+  .pt-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .pt-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pt-chip { font-family: inherit; font-size: 12px; font-weight: 600; color: var(--ink-500); background: #fff; border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; opacity: .55; }
+  .pt-chip.on { opacity: 1; color: var(--ink-900); border-color: var(--ink-400); }
+  .pt-chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .pt-chip b { font-family: 'IBM Plex Mono', monospace; }
+  #ptFit { margin-left: auto; }
+  .pt-map { position: relative; height: calc(100vh - 280px); min-height: 420px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #e5e7eb; }
+  .pt-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ink-500); font-size: 13px; }
+  .pt-pop { font-family: Inter, sans-serif; font-size: 12.5px; line-height: 1.5; }
+  .pt-open { margin-top: 6px; font-family: inherit; font-size: 12px; font-weight: 600; color: #fff; background: var(--accent); border: none; border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+  @media screen and (max-width: 640px) { .pt-map { height: 65vh; } #ptFit { margin-left: 0; width: 100%; justify-content: center; } }
+  .ovl-legend { top: auto; bottom: 10px; }
+  .rs-canvas .rs-mapctl { bottom: 52px; }
+  .at-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-700); background: #e8eefd; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .at-toggle input { accent-color: var(--accent); width: 15px; height: 15px; }
 </style>
 </head>
 <body>
@@ -1069,6 +1104,7 @@
       <li><button class="tab sidebar-link" data-page="hist">Historis Kerusakan</button></li>
       <li><button class="tab sidebar-link" data-page="row">Rekap Ruas Jalan</button></li>
       <li><button class="tab sidebar-link" data-page="cost">Biaya Perbaikan</button></li>
+      <li><button class="tab sidebar-link" data-page="peta">Peta Kerusakan</button></li>
     </ul>
   </div>
   <div class="sidebar-group open" id="sidebarGroupProject">
@@ -2043,6 +2079,7 @@
               <label class="upload-btn" for="rsUpload" style="cursor:pointer;">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/></svg>
                 Upload<input type="file" id="rsUpload" multiple hidden></label>
+              <label class="at-toggle" title="Saat upload DWG, tiap bidang kerusakan langsung dibuatkan issue (Kode, Title, Status, Type). Semua bisa diedit."><input type="checkbox" id="rsAutoTag"> Tagging otomatis dari DWG</label>
               <span class="foot-note" id="rsFolderNote" style="margin:0;"></span>
             </div>
             <p class="ds-status" id="rsStatus"></p>
@@ -2067,13 +2104,18 @@
             <button type="button" class="btn-ghost" id="rsFit" title="Tampilkan seluruh gambar">&#9974; Pas layar</button>
             <button type="button" class="btn-ghost" id="rsAddPin" aria-pressed="false">&#128205; Tambah pin</button>
             <button type="button" class="btn-ghost" id="rsNewIssue" title="Create issue di ruas ini">+ Create issue</button>
+            <button type="button" class="btn-ghost" id="rsOvlBtn" title="Tumpuk versi lain di atas versi yang sedang dilihat">&#x29C9; Superimpose versi</button>
+            <button type="button" class="btn-ghost" id="rsMapBtn" title="Tumpuk gambar DWG di atas peta">&#127758; Superimpose peta</button>
             <button type="button" class="btn-ghost" id="rsFull" aria-pressed="false" title="Layar penuh (F)">&#x26F6; Layar penuh</button>
             <button type="button" class="btn-ghost" id="rsPtsToggle" hidden>Titik survey</button>
           </div>
           <div class="rs-legend"><span><i class="lg r"></i>Ringan</span><span><i class="lg s"></i>Sedang</span><span><i class="lg b"></i>Berat</span></div>
         </div>
         <div class="rs-canvas" id="rsCanvas">
-          <svg id="rsSvg" xmlns="http://www.w3.org/2000/svg"><g id="rsDraw"></g><g id="rsDmg"></g><g id="rsTxt"></g><g id="rsVtx"></g><g id="rsPts"></g><g id="rsPins"></g></svg>
+          <div id="rsMap" class="rs-map" hidden></div>
+          <div class="rs-mapctl" id="rsMapCtl" hidden><label>Transparansi gambar DWG <input type="range" id="rsMapOp" min="0.1" max="1" step="0.05" value="0.85"></label></div>
+          <div class="ovl-legend" id="rsOvlLegend" hidden></div>
+          <svg id="rsSvg" xmlns="http://www.w3.org/2000/svg"><g id="rsOvl"></g><g id="rsDraw"></g><g id="rsDmg"></g><g id="rsTxt"></g><g id="rsVtx"></g><g id="rsPts"></g><g id="rsPins"></g></svg>
           <div class="rs-empty" id="rsEmpty">Belum ada file DWG di ruas ini. Upload file DWG dari Civil 3D di tab <b>Files</b>.</div>
           <div class="rs-loading" id="rsLoading" hidden><span class="spin"></span><span id="rsLoadingText">Membaca DWG&hellip;</span></div>
           <div class="rs-hint" id="rsHint" hidden>Klik di gambar untuk menaruh pin kerusakan baru &middot; Esc untuk batal</div>
@@ -2168,6 +2210,27 @@
       </div>
       <div id="fvBody"></div>
       <div class="v2-modal-foot"><button type="button" class="upload-btn" data-close>Tutup</button></div>
+    </div>
+  </div>
+
+  <!-- PAGE: PETA KERUSAKAN (tidak ikut dicetak) -->
+  <div class="page" data-page="peta" data-title="Peta Kerusakan">
+    <div class="card pt-card">
+      <div class="pt-bar">
+        <div class="pt-chips" id="ptStatus">
+          <button type="button" class="pt-chip on" data-st="Open"><i style="background:#f59e0b"></i>Open <b id="ptN_Open">0</b></button>
+          <button type="button" class="pt-chip on" data-st="In progress"><i style="background:#3b82f6"></i>In progress <b id="ptN_In_progress">0</b></button>
+          <button type="button" class="pt-chip on" data-st="In review"><i style="background:#8b5cf6"></i>In review <b id="ptN_In_review">0</b></button>
+          <button type="button" class="pt-chip on" data-st="Closed"><i style="background:#9ca3af"></i>Closed <b id="ptN_Closed">0</b></button>
+        </div>
+        <div class="pt-chips" id="ptSpk">
+          <button type="button" class="pt-chip on" data-spk="belum">Belum SPK</button>
+          <button type="button" class="pt-chip on" data-spk="sudah">Sudah SPK</button>
+        </div>
+        <button type="button" class="btn-ghost" id="ptFit">&#x26F6; Tampilkan semua titik</button>
+      </div>
+      <div class="pt-map" id="ptMap"><div class="pt-msg" id="ptMsg">Memuat peta&hellip;</div></div>
+      <p class="foot-note" id="ptNote" style="margin-top:8px;">&ndash;</p>
     </div>
   </div>
 
@@ -4805,6 +4868,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         start: parseIndo(startTxt),
         due: parseIndo(c[6].textContent.trim()),
         luas: parseNum(c[8].textContent.trim()),
+        ...(function () { const a = c[11] && c[11].querySelector('a[href*="q="]'); const m = a && /q=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/.exec(a.getAttribute('href')); return m ? { lat: +m[1], lon: +m[2] } : {}; })(),
         formaSpk: normNo(row.dataset.noSpk || ''), spkFromApi: row.dataset.spkSrc === 'api'
       };
     }).filter(Boolean);
@@ -5864,6 +5928,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const link = name && document.querySelector('.sidebar-link[data-page="' + name + '"]');
     if (link) document.title = link.textContent.trim() + ' \u2014 Damage Road';
     if (name === 'spk' && model) renderDataSpk();
+    if (name === 'peta' && model) setTimeout(() => renderPeta(false), 50);
   }
   const pageObs = new MutationObserver(syncActivePage);
   document.querySelectorAll('.page').forEach(p => pageObs.observe(p, { attributes: true, attributeFilter: ['class'] }));
@@ -6345,7 +6410,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const uniq = [], mismatch = [];
     dmg.sort((a, b) => (a.src === 'arsiran' ? 0 : 1) - (b.src === 'arsiran' ? 0 : 1));
     dmg.forEach(d => {
-      d.area = polyArea(d.pts); d.at = labelPoint(d.pts);
+      d.area = polyArea(d.pts); d.at = polyCenter(d.pts);
       const twin = uniq.find(u => Math.abs(u.area - d.area) < 0.01 && (inside(d.at, u.pts) || Math.hypot(u.at[0] - d.at[0], u.at[1] - d.at[1]) < 0.5));
       if (!twin) { uniq.push(d); return; }
       if (twin.kat !== d.kat) { mismatch.push({ area: Math.round(d.area * 1000) / 1000, fill: twin.kat, outline: d.kat, at: [Math.round(twin.at[0] * 1000) / 1000, Math.round(twin.at[1] * 1000) / 1000] }); twin.outlineKat = d.kat; }
@@ -6392,6 +6457,20 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     return out;
   }
 
+  const AUTO_KEY = 'damageRoad.autoTag';
+  function autoTagOn() { try { return localStorage.getItem(AUTO_KEY) !== '0'; } catch (e) { return true; } }
+  // jalankan tagging otomatis untuk versi DWG yang sudah ter-upload sebelumnya
+  async function autoTagVersion(fileId, v) {
+    const f = rs.files.find(x => x.id === fileId); if (!f) return;
+    const ver = f.versions.find(x => x.v === v); if (!ver) return;
+    let g = await idbGet('geom', ver.blobId);
+    if (!g) { const b = await idbGet('blobs', ver.blobId); if (!b) { uiAlert('File versi ini tidak ditemukan.'); return; } g = await parseDwg(await b.blob.arrayBuffer()); g.id = ver.blobId; await idbPut('geom', g); }
+    if (!g.dmg.length) { uiAlert('Tidak ada bidang kerusakan (layer RINGAN / SEDANG / BERAT) di V' + v + '.'); return; }
+    const r = applyDwgToIssues(rs.ruas, fileId, v, g, toISO(new Date()));
+    injectAppIssues(); recomputeAllSafe(); rsRenderHead();
+    if (rs.tab === 'viewer') { rsDrawGeom(); } else if (rs.tab === 'issues') isRender();
+    uiAlert('Tagging otomatis V' + v + ': ' + r.baru + ' issue baru' + (r.update + r.cocokForma ? ', ' + (r.update + r.cocokForma) + ' bidang sudah punya issue' : '') + '. Kode, title, status & type bisa diedit di tab Issues.');
+  }
   // DWG versi baru -> titik kerusakan otomatis
   function applyDwgToIssues(ruas, fileId, v, geom, dateISO) {
     aiEnsure();
@@ -6409,20 +6488,23 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const open = newest(hits.filter(t => t.active && statusOfAi(t) !== 'Closed'));
       if (open) {
         // kerusakan yang sama & belum selesai -> perbarui (luas / kategori bisa berubah)
-        used.add(open.id);
-        open.hist = open.hist || [{ v: open.fileV || 1, type: open.type, luas: open.luas, date: open.created }];
-        const worse = open.type !== d.kat;
-        if (Math.abs((open.luas || 0) - d.area) > 0.0005 || worse || !open.active) { res.update++; open.hist.push({ v: v, type: d.kat, luas: d.area, date: dateISO });
-          isLog(open, 'DWG V' + v + ': ' + (worse ? 'kategori ' + open.type + ' \u2192 ' + d.kat + ', ' : '') + 'luas ' + num(open.luas || 0, 3) + ' \u2192 ' + num(d.area, 3) + ' m\u00b2'); }
+        used.add(open.id); res.lanjut = (res.lanjut || 0) + 1;
+        const prevArea = open.areaDwg != null ? open.areaDwg : (open.luas || 0), prevKat = open.dwgKat || open.type;
+        open.hist = open.hist || [{ v: open.fileV || 1, type: prevKat, luas: prevArea, date: open.created }];
+        const worse = prevKat !== d.kat;
+        if (Math.abs(prevArea - d.area) > 0.0005 || worse || !open.active) { res.update++; open.hist.push({ v: v, type: d.kat, luas: d.area, date: dateISO });
+          isLog(open, 'DWG V' + v + ': ' + (worse ? 'kategori ' + prevKat + ' \u2192 ' + d.kat + ', ' : '') + 'bidang ' + num(prevArea, 3) + ' \u2192 ' + num(d.area, 3) + ' m\u00b2 (luas resmi tetap dari API)'); }
         else isLog(open, 'Masih terlihat di DWG V' + v + ', tidak ada perubahan');
         if (worse) { res.berubah++; res.berubahList.push((open.code || '') + ' ' + open.type + '\u2192' + d.kat); }
-        Object.assign(open, { luas: d.area, x: d.at[0], y: d.at[1], poly: d.pts, fileId: fileId, fileV: v, active: true, lat: gps && gps.lat, lon: gps && gps.lon });
-        if (!open.linkedKey) { open.type = d.kat; open.code = letterFix(open.code, d.kat); }
+        Object.assign(open, { areaDwg: d.area, dwgKat: d.kat, x: d.at[0], y: d.at[1], poly: d.pts, fileId: fileId, fileV: v, active: true, lat: gps && gps.lat, lon: gps && gps.lon, centered: 1 });
+        if (open.src === 'pin') { open.src = 'dwg'; open.firstV = open.firstV || open.fileV; }
+        // kategori hanya diganti kalau di gambar memang berubah; hasil edit manual (kode/title/type) tetap dihormati
+        if (!open.linkedKey && worse) { open.type = d.kat; open.code = letterFix(open.code, d.kat); if (!open.titleEdited) open.title = d.kat; }
         return;
       }
       const base = { id: 'ai' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ruas: ruas, src: 'dwg', fileId: fileId, fileV: v, firstV: v, active: true,
-        type: d.kat, luas: d.area, x: d.at[0], y: d.at[1], poly: d.pts, lat: gps && gps.lat, lon: gps && gps.lon, created: dateISO, start: dateISO, noSpk: '', note: '',
-        num: isNextNum(ruas), title: d.kat, log: [{ at: new Date().toISOString(), text: 'Dibuat otomatis dari DWG V' + v + ' (luas ' + num(d.area, 3) + ' m\u00b2)' }] };
+        type: d.kat, dwgKat: d.kat, luas: 0, areaDwg: d.area, x: d.at[0], y: d.at[1], poly: d.pts, lat: gps && gps.lat, lon: gps && gps.lon, created: dateISO, start: dateISO, noSpk: '', note: '', centered: 1,
+        num: isNextNum(ruas), title: d.kat, log: [{ at: new Date().toISOString(), text: 'Tagging otomatis dari DWG V' + v + ' (bidang ' + d.kat.toLowerCase() + ')' }] };
       const prev = newest(hits.slice());
       if (prev && baseOf(prev.code) != null) {
         // titik ini pernah rusak & sudah diperbaiki -> kerusakan berulang di titik yang sama
@@ -6605,14 +6687,21 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         await idbPut('geom', Object.assign({ id: blobId }, geom));
         // Area kerusakan di DWG hanya DITAMPILKAN di gambar. Issue dibuat manual (Create issue / Tambah pin / klik area),
         // kode kerusakan diisi manual, luas/company/No SPK nanti otomatis dari API eksternal.
-        const r = { baru: 0, cocokForma: 0, update: 0, hilang: 0, berulang: 0, berulangList: [], berubah: 0, berubahList: [], manual: true };
+        // Tagging otomatis (bisa dimatikan): tiap bidang kerusakan jadi issue dengan Kode, Title, Status, Type terisi.
+        // Luas/Company/No SPK tetap dari API. Semua isian bisa diedit manual.
+        const r = autoTagOn() ? applyDwgToIssues(rs.ruas, rec.id, v, geom, now.slice(0, 10))
+          : { baru: 0, cocokForma: 0, update: 0, hilang: 0, berulang: 0, berulangList: [], berubah: 0, berubahList: [], manual: true };
+        if (!r.manual) { const codes = appIssues.list.filter(t => t.ruas === rs.ruas && t.fileId === rec.id && t.fileV === v && t.src === 'dwg').map(t => t.code).sort(natural); r.codes = codes; }
         ver.dwg = { cogo: geom.cogo || 0, n: geom.dmg.length, ringan: geom.dmg.filter(d => d.kat === 'Ringan').length, sedang: geom.dmg.filter(d => d.kat === 'Sedang').length, berat: geom.dmg.filter(d => d.kat === 'Berat').length, res: r, mismatch: (geom.mismatch || []).length };
         if ((geom.mismatch || []).length) {
           const mm = geom.mismatch, grp = {};
           mm.forEach(x => { const k = 'arsiran ' + x.fill + ' / garis batas ' + x.outline; grp[k] = (grp[k] || 0) + 1; });
           msg += ' \u26A0 Perlu dicek: ' + mm.length + ' area punya layer berbeda antara arsiran dan garis batasnya (' + Object.keys(grp).map(k => grp[k] + '\u00d7 ' + k).join(', ') + '). Kategori diambil dari arsiran.';
         }
-        if (r.manual) msg += ' ' + geom.dmg.length + ' area kerusakan terlihat di gambar (' + ver.dwg.ringan + ' ringan, ' + ver.dwg.sedang + ' sedang, ' + ver.dwg.berat + ' berat). Buat issue lewat tab Gambar & titik: klik area kerusakan, Tambah pin, atau Create issue.';
+        if (!r.manual) msg += ' Tagging otomatis: ' + geom.dmg.length + ' bidang \u2192 ' + r.baru + ' issue baru' + (r.berulang ? ' (berulang: ' + r.berulangList.join(', ') + ')' : '') +
+          (r.lanjut ? ', ' + r.lanjut + ' issue dari versi sebelumnya masih ada (kode & isian tetap)' : '') + (r.berubah ? ', ' + r.berubah + ' berubah kategori (' + r.berubahList.join(', ') + ')' : '') +
+          (r.hilang ? ', ' + r.hilang + ' tidak ada lagi di V' + v : '') + '. Kode, title, status & type bisa diedit di tab Issues.';
+        else if (r.manual) msg += ' ' + geom.dmg.length + ' area kerusakan terlihat di gambar (' + ver.dwg.ringan + ' ringan, ' + ver.dwg.sedang + ' sedang, ' + ver.dwg.berat + ' berat). Buat issue lewat tab Gambar & titik: klik area kerusakan, Tambah pin, atau Create issue.';
         else if (v > 1 && !r.baru && !r.cocokForma && !r.update && !r.hilang) msg += ' ' + geom.dmg.length + ' area kerusakan terbaca \u2014 tidak ada perubahan titik dibanding versi sebelumnya.';
         else msg += ' ' + geom.dmg.length + ' area kerusakan terbaca \u2192 ' + r.baru + ' titik baru' + (r.berulang ? ' (' + r.berulang + ' di antaranya kerusakan berulang: ' + r.berulangList.join(', ') + ')' : '') +
           (r.berubah ? ', ' + r.berubah + ' titik berubah kategori (' + r.berubahList.join(', ') + ')' : '') + (r.cocokForma ? ', ' + r.cocokForma + ' dicocokkan ke titik Forma yang sudah ada' : '') +
@@ -6660,6 +6749,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       if (!actMenu.hidden && actAnchor === fm) { closeActMenu(); return; }
       openActMenu(fm, [
         isDwg ? { label: 'Buka gambar', fn: () => { rs.viewFile = f.id; rs.viewV = null; rsSetTab('viewer'); } } : { label: 'Lihat file', fn: () => openFileViewer(f.id) },
+        isDwg ? { label: 'Tagging otomatis V' + cur.v, fn: () => autoTagVersion(f.id, cur.v) } : null,
         !isDwg && f.versions.length > 1 ? { label: 'Bandingkan versi', fn: () => { openFileViewer(f.id); const p = f.versions[f.versions.length - 2].v; $('fvvB').value = p; $('fvvB').dispatchEvent(new Event('change')); } } : null,
         { label: 'Download (V' + cur.v + ')', fn: () => rsDownload(f.id, cur.v) },
         { label: 'Riwayat versi (' + f.versions.length + ')', fn: () => rsHistory(f.id) },
@@ -6768,6 +6858,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     rs.survey = list;
   }
   async function rsOpenViewer() {
+    rs.sel = null; if ($('rsSide')) $('rsSide').hidden = true;
     const dwgs = rs.files.filter(f => /\.dwg$/i.test(f.name));
     const sel = $('rsViewFile');
     await rsLoadSurvey();
@@ -6797,6 +6888,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         g = await parseDwg(await b.blob.arrayBuffer()); g.id = ver.blobId; await idbPut('geom', g);
       }
       rs.geom = g; rs.geomV = v; rs.geomLatest = v === latest; rsSetOrigin();
+      if (aiCenterPins()) injectAppIssues();
+      if (rs.mapMode) setTimeout(() => rsMapRender(true), 50);
       rsDrawGeom(); rsFit();
     } catch (err) {
       $('rsDraw').innerHTML = ''; $('rsDmg').innerHTML = '';
@@ -6817,10 +6910,186 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const r2 = n => Math.round(n * 1000) / 1000;
     const path = pts => 'M' + pts.map(p => r2(SX(p[0])) + ' ' + r2(SY(p[1]))).join('L');
     $('rsDraw').innerHTML = '<path d="' + g.lines.map(path).join(' ') + '" fill="none" stroke="#3a4150" stroke-width="1" vector-effect="non-scaling-stroke"/>';
-    $('rsDmg').innerHTML = g.dmg.map(d => '<path d="' + path(d.pts) + 'Z" fill="' + TYPE_COL[d.kat] + '" fill-opacity=".85" stroke="#b91c1c" stroke-width=".8" vector-effect="non-scaling-stroke"/>').join('');
+    $('rsDmg').innerHTML = g.dmg.map((d, di) => '<path data-di="' + di + '" d="' + path(d.pts) + 'Z" fill="' + TYPE_COL[d.kat] + '" fill-opacity=".85" stroke="#b91c1c" stroke-width=".8" vector-effect="non-scaling-stroke"/>').join('');
     const hs = (g.texts || []).map(t => t.h).sort((a, b) => a - b); rs.txtH = hs.length ? hs[Math.floor(hs.length / 2)] : 0;
+    rsDrawOverlays();
     $('rsTxt').innerHTML = (g.texts || []).map(t => { const x = r2(SX(t.p[0])), y = r2(SY(t.p[1])); return '<text x="' + x + '" y="' + y + '" font-size="' + t.h + '"' + (t.r ? ' transform="rotate(' + (-t.r * 180 / Math.PI) + ' ' + x + ' ' + y + ')"' : '') + '>' + esc(t.t) + '</text>'; }).join('');
     rsRenderPins();
+  }
+  // ============================================================
+  // (10) Titik tengah bidang: "pole of inaccessibility" (titik paling dalam), selalu di dalam bidang
+  // ============================================================
+  function polyCenter(pts) {
+    if (!pts || pts.length < 3) return pts && pts[0] ? pts[0] : [0, 0];
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    pts.forEach(p => { if (p[0] < minX) minX = p[0]; if (p[1] < minY) minY = p[1]; if (p[0] > maxX) maxX = p[0]; if (p[1] > maxY) maxY = p[1]; });
+    const w = maxX - minX, h = maxY - minY, size = Math.min(w, h);
+    if (!size) return [(minX + maxX) / 2, (minY + maxY) / 2];
+    const segD = (px, py) => { // jarak bertanda ke tepi poligon (positif = di dalam)
+      let inside = false, md = Infinity;
+      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+        const a = pts[i], b = pts[j];
+        if ((a[1] > py) !== (b[1] > py) && px < (b[0] - a[0]) * (py - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+        let x = b[0], y = b[1], dx = a[0] - x, dy = a[1] - y;
+        if (dx || dy) { const t = Math.max(0, Math.min(1, ((px - x) * dx + (py - y) * dy) / (dx * dx + dy * dy))); x += dx * t; y += dy * t; }
+        const d = (px - x) * (px - x) + (py - y) * (py - y); if (d < md) md = d;
+      }
+      return (inside ? 1 : -1) * Math.sqrt(md);
+    };
+    const cell = (x, y, hh) => { const d = segD(x, y); return { x: x, y: y, h: hh, d: d, max: d + hh * Math.SQRT2 }; };
+    const q = []; let hh = size / 2;
+    for (let x = minX; x < maxX; x += size) for (let y = minY; y < maxY; y += size) q.push(cell(x + hh, y + hh, hh));
+    const c0 = labelPoint(pts); let best = cell(c0[0], c0[1], 0);
+    const bb = cell(minX + w / 2, minY + h / 2, 0); if (bb.d > best.d) best = bb;
+    const prec = Math.max(size / 200, 0.01); let it = 0;
+    while (q.length && it++ < 4000) {
+      q.sort((a, b) => a.max - b.max); const c = q.pop();
+      if (c.d > best.d) best = c;
+      if (c.max - best.d <= prec) continue;
+      hh = c.h / 2;
+      q.push(cell(c.x - hh, c.y - hh, hh), cell(c.x + hh, c.y - hh, hh), cell(c.x - hh, c.y + hh, hh), cell(c.x + hh, c.y + hh, hh));
+    }
+    return [best.x, best.y];
+  }
+  // geser pin issue yang punya bidang ke titik tengah bidangnya (sekali, untuk data lama)
+  function aiCenterPins() {
+    aiEnsure(); let ch = false;
+    appIssues.list.forEach(t => {
+      if (!t.poly || t.poly.length < 3 || t.x == null || t.centered) return;
+      const c = polyCenter(t.poly);
+      if (Math.hypot(c[0] - t.x, c[1] - t.y) > 0.01) { const g = toGps(c[0], c[1]); t.x = Math.round(c[0] * 1000) / 1000; t.y = Math.round(c[1] * 1000) / 1000; if (g) { t.lat = g.lat; t.lon = g.lon; } }
+      t.centered = 1; ch = true;
+    });
+    if (ch) aiSave();
+    return ch;
+  }
+
+  // ============================================================
+  // (11) Per versi + superimpose versi lain
+  // ============================================================
+  const OVL_COL = ['#7c3aed', '#0891b2', '#db2777', '#65a30d', '#ea580c'];
+  rs.ovl = rs.ovl || {};          // { 'fileId|v': { g, color } }
+  // issue yang "milik" versi tertentu dari file yang sedang dilihat
+  function rsIssuesOfVersion(fileId, v) {
+    aiEnsure();
+    return appIssues.list.filter(t => {
+      if (t.ruas !== rs.ruas || t.x == null || t.fileId !== fileId) return false;
+      // tampil dari versi pertama sampai versi terakhir dia masih ada di gambar;
+      // pin manual di luar bidang hanya ada di versi tempat dia dibuat (firstV = fileV)
+      const a = t.firstV || t.fileV, b = t.active ? (t.fileV || a) : (t.goneIn ? t.goneIn - 1 : t.fileV);
+      return v >= a && v <= b;
+    });
+  }
+  async function rsGeomOf(f, v) {
+    const ver = f.versions.find(x => x.v === v); if (!ver) return null;
+    let g = await idbGet('geom', ver.blobId);
+    if (!g) { const b = await idbGet('blobs', ver.blobId); if (!b) return null; g = await parseDwg(await b.blob.arrayBuffer()); g.id = ver.blobId; await idbPut('geom', g); }
+    return g;
+  }
+  function rsOvlKeys() { return Object.keys(rs.ovl).filter(k => k.split('|')[0] === rs.viewFile && +k.split('|')[1] !== rs.geomV); }
+  function rsDrawOverlays() {
+    const el = $('rsOvl'); if (!el) return;
+    const r2 = n => Math.round(n * 1000) / 1000;
+    const path = pts => 'M' + pts.map(p => r2(SX(p[0])) + ' ' + r2(SY(p[1]))).join('L');
+    el.innerHTML = rsOvlKeys().map(k => {
+      const o = rs.ovl[k]; if (!o.g) return '';
+      return '<g class="ovl" opacity=".9"><path d="' + o.g.lines.map(path).join(' ') + '" fill="none" stroke="' + o.color + '" stroke-opacity=".55" stroke-width="1.2" vector-effect="non-scaling-stroke"/>' +
+        o.g.dmg.map(d => '<path d="' + path(d.pts) + 'Z" fill="' + o.color + '" fill-opacity=".18" stroke="' + o.color + '" stroke-width="1.4" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>').join('') + '</g>';
+    }).join('');
+    const lg = $('rsOvlLegend');
+    if (lg) { const ks = rsOvlKeys(); lg.hidden = !ks.length; lg.innerHTML = ks.length ? '<span class="ovl-l base"><i></i>V' + rs.geomV + ' (dilihat)</span>' + ks.map(k => '<span class="ovl-l"><i style="border-color:' + rs.ovl[k].color + ';background:' + rs.ovl[k].color + '2e"></i>V' + k.split('|')[1] + ' (superimpose)</span>').join('') : ''; }
+  }
+  function rsOvlMenu(anchor) {
+    const f = rs.files.find(x => x.id === rs.viewFile); if (!f) return;
+    const others = f.versions.filter(x => x.v !== rs.geomV);
+    if (!others.length) { uiAlert('File ini baru punya 1 versi. Superimpose bisa dipakai setelah ada versi lain (V2, V3, \u2026).'); return; }
+    openActMenu(anchor, others.slice().reverse().map((x, i) => {
+      const key = f.id + '|' + x.v, on = !!rs.ovl[key];
+      return { label: (on ? '\u2611 ' : '\u2610 ') + 'Tumpuk V' + x.v + ' \u00b7 ' + fmtWaktu(x.date), fn: async () => {
+        if (on) { delete rs.ovl[key]; }
+        else {
+          const used = Object.values(rs.ovl).map(o => o.color);
+          const color = OVL_COL.find(c => !used.includes(c)) || OVL_COL[i % OVL_COL.length];
+          rs.ovl[key] = { color: color, g: null };
+          $('rsLoading').hidden = false; $('rsLoadingText').textContent = 'Memuat V' + x.v + '\u2026';
+          try { rs.ovl[key].g = await rsGeomOf(f, x.v); } catch (e) { delete rs.ovl[key]; uiAlert('V' + x.v + ' tidak bisa dimuat: ' + (e.message || e)); }
+          $('rsLoading').hidden = true;
+        }
+        rsDrawOverlays(); rsRenderPins(); if (rs.mapMode) rsMapRender();
+      } };
+    }).concat(Object.keys(rs.ovl).length ? ['-', { label: 'Hapus semua superimpose', fn: () => { rs.ovl = {}; rsDrawOverlays(); rsRenderPins(); if (rs.mapMode) rsMapRender(); } }] : []));
+  }
+
+  // ============================================================
+  // (12) Superimpose gambar DWG di atas peta (satelit / jalan)
+  // ============================================================
+  const LEAF = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
+  let leafP = null;
+  function loadLeaflet() {
+    if (window.L && window.L.map) return Promise.resolve(window.L);
+    if (leafP) return leafP;
+    leafP = new Promise((res, rej) => {
+      const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = LEAF + 'leaflet.css'; document.head.appendChild(css);
+      const s = document.createElement('script'); s.src = LEAF + 'leaflet.js';
+      s.onload = () => res(window.L); s.onerror = () => { leafP = null; rej(new Error('Library peta gagal dimuat (cek koneksi internet).')); };
+      document.head.appendChild(s);
+    });
+    return leafP;
+  }
+  function baseLayers(L) {
+    return {
+      'Satelit': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 21, maxNativeZoom: 19, attribution: 'Citra &copy; Esri, Maxar, Earthstar Geographics' }),
+      'Jalan': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 21, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap' })
+    };
+  }
+  function pinIcon(L, color, letter, opts) {
+    opts = opts || {};
+    const s = opts.small ? 0.75 : 1, w = 26 * s, h = 36 * s;
+    return L.divIcon({ className: 'lf-pin', iconSize: [w, h], iconAnchor: [w / 2, h], popupAnchor: [0, -h + 4],
+      html: '<svg width="' + w + '" height="' + h + '" viewBox="0 0 26 36"' + (opts.faded ? ' opacity=".6"' : '') + '><path d="M13 35 C13 35 25 20 25 12.5 A12 12 0 1 0 1 12.5 C1 20 13 35 13 35Z" fill="' + color + '" stroke="#fff" stroke-width="2"/><text x="13" y="17" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="Inter,Arial,sans-serif">' + esc(letter) + '</text></svg>' });
+  }
+  const ll = (x, y) => { const g = toGps(x, y); return g ? [g.lat, g.lon] : null; };
+  async function rsSetMapMode(on) {
+    rs.mapMode = on;
+    const b = $('rsMapBtn'); if (b) { b.classList.toggle('on', on); b.innerHTML = on ? '&#9998; Kembali ke gambar' : '&#127758; Superimpose peta'; }
+    $('rsMap').hidden = !on; svg.style.visibility = on ? 'hidden' : '';
+    $('rsMapCtl').hidden = !on;
+    if (!on) return;
+    if (!rs.geom || !rsCoreBox(rs.geom) || !toGps((rsCoreBox(rs.geom)[0] + rsCoreBox(rs.geom)[2]) / 2, (rsCoreBox(rs.geom)[1] + rsCoreBox(rs.geom)[3]) / 2)) {
+      uiAlert('Koordinat gambar ini bukan UTM zona 48S, jadi belum bisa ditumpuk ke peta.'); rsSetMapMode(false); return;
+    }
+    try { await loadLeaflet(); } catch (e) { uiAlert(e.message); rsSetMapMode(false); return; }
+    if (!rs.lmap) {
+      const L = window.L;
+      rs.lmap = L.map('rsMap', { zoomControl: true, maxZoom: 21, attributionControl: true });
+      rs.lbase = baseLayers(L); rs.lbase['Satelit'].addTo(rs.lmap);
+      L.control.layers(rs.lbase, null, { position: 'topleft' }).addTo(rs.lmap);
+      rs.ldwg = L.layerGroup().addTo(rs.lmap); rs.lpins = L.layerGroup().addTo(rs.lmap);
+    }
+    setTimeout(() => { rs.lmap.invalidateSize(); rsMapRender(true); }, 60);
+  }
+  function rsMapRender(fit) {
+    if (!rs.lmap || !rs.geom) return;
+    const L = window.L, op = parseFloat(($('rsMapOp') || {}).value || '0.85');
+    rs.ldwg.clearLayers(); rs.lpins.clearLayers();
+    const core = rsCoreBox(rs.geom), cx = (core[0] + core[2]) / 2, cy = (core[1] + core[3]) / 2, R = Math.hypot(core[2] - core[0], core[3] - core[1]);
+    const keep = l => l.some(p => Math.hypot(p[0] - cx, p[1] - cy) < R);
+    const drawGeom = (g, color, isBase) => {
+      const lines = g.lines.filter(keep).map(l => l.map(p => ll(p[0], p[1])).filter(Boolean)).filter(l => l.length > 1);
+      if (lines.length) L.polyline(lines, { color: isBase ? '#ffffff' : color, weight: isBase ? 1.6 : 1.4, opacity: op, interactive: false }).addTo(rs.ldwg);
+      g.dmg.forEach(d => { const poly = d.pts.map(p => ll(p[0], p[1])).filter(Boolean); if (poly.length > 2) L.polygon(poly, { color: isBase ? '#b91c1c' : color, weight: 1.5, dashArray: isBase ? null : '5 3', fillColor: isBase ? TYPE_COL[d.kat] : color, fillOpacity: (isBase ? 0.7 : 0.25) * op, opacity: op }).addTo(rs.ldwg).bindTooltip((isBase ? '' : 'Superimpose \u00b7 ') + d.kat); });
+    };
+    rsOvlKeys().forEach(k => { if (rs.ovl[k].g) drawGeom(rs.ovl[k].g, rs.ovl[k].color, false); });
+    drawGeom(rs.geom, null, true);
+    const pinsOf = (v, faded, color) => rsIssuesOfVersion(rs.viewFile, v).forEach(t => {
+      const p = ll(t.x, t.y); if (!p) return;
+      const it = isItemFromApp(t);
+      L.marker(p, { icon: pinIcon(L, faded ? color : (STATUS_COL[it.status] || '#f59e0b'), TYPE_LETTER[t.type] || '?', { small: faded, faded: faded }), title: t.code + (faded ? ' (V' + v + ')' : '') })
+        .addTo(rs.lpins).on('click', () => { if (!faded) { rsSelect(t.id); } }).bindTooltip(t.code + ' \u00b7 ' + t.type + (faded ? ' \u00b7 V' + v : ''));
+    });
+    rsOvlKeys().forEach(k => pinsOf(+k.split('|')[1], true, rs.ovl[k].color));
+    pinsOf(rs.geomV, false);
+    if (fit) { const a = ll(core[0], core[1]), b = ll(core[2], core[3]); if (a && b) rs.lmap.fitBounds([a, b], { padding: [12, 12] }); }
   }
   function rsFit() {
     const bb = rsCoreBox(rs.geom); if (!bb) return;
@@ -6836,6 +7105,10 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     rsApplyView();
   }
   if ($('rsFit')) $('rsFit').addEventListener('click', rsFit);
+  if ($('rsAutoTag')) { $('rsAutoTag').checked = autoTagOn(); $('rsAutoTag').addEventListener('change', e => { try { localStorage.setItem(AUTO_KEY, e.target.checked ? '1' : '0'); } catch (err) { /* abaikan */ } pjToast('Tagging otomatis ' + (e.target.checked ? 'aktif' : 'nonaktif') + '.'); }); }
+  // ukuran area gambar bisa berubah (tinggi menyesuaikan gambar, scrollbar muncul/hilang, layar penuh):
+  // samakan lagi perbandingan viewBox supaya klik di gambar tepat di posisi yang benar
+  if (window.ResizeObserver && $('rsCanvas')) new ResizeObserver(() => { if (rs.view && rs.tab === 'viewer') rsApplyView(); }).observe($('rsCanvas'));
   // ---------- layar penuh untuk gambar ----------
   // Yang dibuat penuh adalah seluruh halaman (lalu kartu gambar menutupi layar), supaya form Create issue,
   // detail issue, dan dialog lain tetap bisa muncul di atas gambar.
@@ -6862,6 +7135,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     if (e.key === 'Escape' && rsIsFull() && !rs.pinMode) rsSetFull(false);
   });
   if ($('rsNewIssue')) $('rsNewIssue').addEventListener('click', () => isOpenForm(null));
+  if ($('rsOvlBtn')) $('rsOvlBtn').addEventListener('click', e => { e.stopPropagation(); if (!actMenu.hidden && actAnchor === e.currentTarget) { closeActMenu(); return; } rsOvlMenu(e.currentTarget); });
+  if ($('rsMapBtn')) $('rsMapBtn').addEventListener('click', () => rsSetMapMode(!rs.mapMode));
+  if ($('rsMapOp')) $('rsMapOp').addEventListener('input', () => rsMapRender(false));
   function rsApplyView() {
     if (!rs.view) return;
     const r = svg.getBoundingClientRect();
@@ -6875,7 +7151,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   function pxToWorld(cx, cy) { const r = svg.getBoundingClientRect(); return [rs.view.x + (cx - r.left) / r.width * rs.view.w, rs.view.y + (cy - r.top) / r.height * rs.view.h]; }
   function rsPins() {
     aiEnsure();
-    return appIssues.list.filter(t => t.ruas === rs.ruas && t.active && t.x != null && !t.nextId);
+    if (!rs.viewFile) return appIssues.list.filter(t => t.ruas === rs.ruas && t.active && t.x != null && !t.nextId);
+    return rsIssuesOfVersion(rs.viewFile, rs.geomV);
   }
   function rsRenderOverlays(k) {
     const v = rs.view, inV = (x, y) => SX(x) >= v.x && SX(x) <= v.x + v.w && SY(y) >= v.y && SY(y) <= v.y + v.h;
@@ -6908,7 +7185,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const r = svg.getBoundingClientRect(); const k = rs.view.w / Math.max(1, r.width);
     rsRenderOverlays(k);
     const R = 14 * k;
-    g.innerHTML = rsPins().map(t => {
+    // pin dari versi yang di-superimpose: kecil & transparan, warna versinya
+    const ovlPins = rsOvlKeys().map(kk => { const v = +kk.split('|')[1], col = rs.ovl[kk].color; return rsIssuesOfVersion(rs.viewFile, v).map(t => {
+      const r = R * 0.7, cx = SX(t.x), cy = SY(t.y) - r * 1.6;
+      return '<g class="rs-pin-ovl" opacity=".75" transform="translate(' + cx + ' ' + cy + ')"><title>' + esc(t.code) + ' \u00b7 V' + v + '</title><path d="M0 ' + (r * 1.6) + ' L' + (-r * 0.55) + ' ' + (r * 0.7) + ' A' + r + ' ' + r + ' 0 1 1 ' + (r * 0.55) + ' ' + (r * 0.7) + ' Z" fill="' + col + '" stroke="#fff" stroke-width="' + k + '"/>' +
+        '<text y="' + (r * 0.38) + '" text-anchor="middle" font-size="' + (r * 1.05) + '" font-weight="700" fill="#fff" font-family="Inter, sans-serif">' + (TYPE_LETTER[t.type] || '?') + '</text></g>'; }).join(''); }).join('');
+    g.innerHTML = ovlPins + rsPins().map(t => {
       const mi = model && model.issues.find(i => i.key === (t.linkedKey || 'id:app:' + t.id));
       const status = mi ? mi.status : t.status;
       const cx = SX(t.x), cy = SY(t.y) - R * 1.6;
@@ -6954,11 +7236,13 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       // klik area kerusakan di gambar -> buat issue di area itu (kategori mengikuti layer; luas tetap dari API)
       if (rs.geom && rs.geomLatest !== false) {
         const w = pxToWorld(e.clientX, e.clientY), wx = w[0] + (rs.ox || 0), wy = (rs.oy || 0) - w[1];
-        const area = (rs.geom.dmg || []).find(d => inside([wx, wy], d.pts));
+        // bidang yang diklik: ambil dari elemen gambar yang kena klik (paling akurat), kalau tidak ada pakai hitung titik-di-dalam-bidang
+        const hitA = hit && hit.closest && hit.closest('#rsDmg path[data-di]');
+        const area = (hitA && rs.geom.dmg[+hitA.dataset.di]) || (rs.geom.dmg || []).find(d => inside([wx, wy], d.pts));
         if (area) {
-          const used = appIssues.list.find(t => t.ruas === rs.ruas && t.active !== false && !t.nextId && t.x != null && inside([t.x, t.y], area.pts) && statusOfAi(t) !== 'Closed');
+          const used = rsIssuesOfVersion(rs.viewFile, rs.geomV).find(t => inside([t.x, t.y], area.pts) && statusOfAi(t) !== 'Closed');
           if (used) { rsSelect(used.id); return; }
-          const at = area.at || [wx, wy];
+          const at = polyCenter(area.pts);
           isOpenForm(null, 'code', { x: at[0], y: at[1], fileId: rs.viewFile, fileV: rs.geomV, poly: area.pts, kat: area.kat });
         }
       }
@@ -6986,6 +7270,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && rs.pinMode) rsSetPinMode(false); });
   function rsAddPinAt(x, y) {
     rsSetPinMode(false);
+    // pin yang ditaruh di dalam bidang kerusakan otomatis ke titik tengah bidang itu
+    const area = rs.geom && (rs.geom.dmg || []).find(d => inside([x, y], d.pts));
+    if (area) { const c = polyCenter(area.pts); isPlacementPicked({ x: Math.round(c[0] * 1000) / 1000, y: Math.round(c[1] * 1000) / 1000, fileId: rs.viewFile, fileV: rs.geomV, poly: area.pts, kat: area.kat }); return; }
     isPlacementPicked({ x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000, fileId: rs.viewFile, fileV: rs.geomV });
   }
   function rsAddPinAtOld(x, y) {
@@ -7141,7 +7428,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       start: fx ? fx.start : (t.start || t.created), due: fx ? fx.due : (t.due || ''),
       closed: fx ? (fc[7] && parseIndo(fc[7].textContent.trim()) ? toISO(parseIndo(fc[7].textContent.trim())) : '') : (t.status === 'Closed' ? (t.closedAt || '') : ''),
       spk: mi && mi.spkId ? spkLabel(mi.spkId) : '', spkId: mi && mi.spkId, spkSrc: mi && mi.spkSrc,
-      firstV: t.firstV || null, lastV: t.src === 'pin' && t.fileId ? (isLatestV(t.fileId) || lastSeen) : lastSeen, gone: !t.active, superseded: !!t.nextId, fileId: t.fileId };
+      firstV: t.firstV || t.fileV || null, lastV: lastSeen, gone: !t.active, superseded: !!t.nextId, fileId: t.fileId };
   }
   function isItems() {
     aiEnsure();
@@ -7366,7 +7653,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       '</div><div class="is-dcol is-dcolB">' +
       isField('Title', esc(it.title), editable ? 'title' : '') +
       '<div class="is-f"><div class="is-fl">Status</div><div class="is-fv"><div class="is-val">' + (editable ? '<select class="is-qstatus" data-isq="status">' + STATUSES.map(s => '<option' + (s === it.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select>' : isStatusDot(it.status)) + '</div></div></div>' +
-      isField('Type', isTypeBadge(it.type), editable && t.src !== 'dwg' ? 'type' : '') +
+      isField('Type', isTypeBadge(it.type), editable ? 'type' : '') +
       isField('Kode Kerusakan', '<b>' + esc(it.code) + '</b>', '') +
       isField('Luas <span class="auto-tag">otomatis</span>', autoV(it.luas ? num(it.luas, 3) : '', it.luasSrc, ' m\u00b2'), '') +
       isField('Assigned to', esc(it.assignee || '\u2013'), editable ? 'assignee' : '') +
@@ -7473,7 +7760,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('isFormTitle').textContent = t ? 'Edit issue #' + t.num + ' (' + t.code + ')' : 'Create issue';
     const types = isActiveTypes().map(x => x.name);
     $('isFType').value = t && types.includes(t.type) ? t.type : (placement && placement.kat && types.includes(placement.kat) ? placement.kat : (types[0] || 'Ringan'));
-    $('isFType').disabled = !!(t && t.src === 'dwg');
+    $('isFType').disabled = false;
     $('isFTitle').value = t ? (t.title || t.type) : $('isFType').value; $('isFTitle').dataset.touched = t ? '1' : '';
     $('isFStatus').value = t ? t.status : 'Open';
     $('isFDesc').value = t ? (t.desc || '') : '';
@@ -7503,7 +7790,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   });
   // dipanggil viewer saat pengguna klik lokasi di gambar (Tambah pin / Pilih lokasi)
   function isPlacementPicked(p) {
-    if (isForm.picking) { isForm.picking = false; isForm.placement = p; isRenderPlacement(); isPreviewCode(); $('isFormModal').hidden = false; }
+    if (isForm.picking) { isForm.picking = false; isForm.placement = p; if (p.kat && !isForm.editId) { const o = Array.from($('isFType').options).find(x => x.value === p.kat); if (o) $('isFType').value = p.kat; } isRenderPlacement(); isPreviewCode(); $('isFormModal').hidden = false; }
     else isOpenForm(null, null, p);
     $('rsHint').textContent = 'Klik di gambar untuk menaruh pin kerusakan baru \u00b7 Esc untuk batal';
   }
@@ -7529,10 +7816,11 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       if (t.status !== data.status && data.status === 'Closed') t.closedAt = toISO(new Date());
       if (t.status !== data.status && data.status !== 'Closed') t.closedAt = '';
       if (t.status !== data.status) isLog(t, 'Status ' + t.status + ' \u2192 ' + data.status);
+      if (t.title !== data.title) t.titleEdited = true;
       Object.assign(t, data);
+      if (t.type !== type) { isLog(t, 'Type ' + t.type + ' \u2192 ' + type); t.type = type; }
       if (t.src !== 'dwg') {
-        if (t.type !== type) { isLog(t, 'Type ' + t.type + ' \u2192 ' + type); t.type = type; }
-        if (p && (p.x !== t.x || p.y !== t.y)) { Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: t.firstV || p.fileV, lat: gps && gps.lat, lon: gps && gps.lon }); isLog(t, 'Penempatan di gambar diubah (V' + p.fileV + ')'); }
+        if (p && (p.x !== t.x || p.y !== t.y)) { Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: p.fileV, lat: gps && gps.lat, lon: gps && gps.lon, poly: p.poly || null, centered: 1 }); isLog(t, 'Penempatan di gambar diubah (V' + p.fileV + ')'); }
         if (!p && t.x != null) { delete t.x; delete t.y; t.fileId = null; isLog(t, 'Penempatan di gambar dihapus'); }
       }
       const other = changes.filter(k => k !== 'status');
@@ -7543,7 +7831,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       t = Object.assign({ id: 'ai' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ruas: rs.ruas, src: 'pin', active: true, num: isNextNum(rs.ruas),
         code: code, type: type, luas: 0, created: toISO(new Date()), note: '', repeat: !!rep, parentId: rep ? host.id : undefined,
         log: [{ at: new Date().toISOString(), text: 'Issue dibuat' + (rep ? ' \u2014 kerusakan berulang di lokasi ' + host.code : '') }] }, data);
-      if (p) Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: p.fileV, lat: gps && gps.lat, lon: gps && gps.lon }, p.poly ? { poly: p.poly } : {});
+      if (p) Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: p.fileV, lat: gps && gps.lat, lon: gps && gps.lon, centered: 1 }, p.poly ? { poly: p.poly } : {});
       if (rep) { host.nextId = t.id; isLog(host, 'Rusak lagi \u2192 ' + t.code); }
       if (data.status === 'Closed') t.closedAt = toISO(new Date());
       appIssues.list.push(t);
@@ -7963,6 +8251,68 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   // tarik otomatis saat dibuka (kalau diaktifkan)
   setTimeout(() => { const c = igLoad(); if (c.auto && (c.issueUrl || c.spkUrl)) igSync().then(r => pjToast('Data API diperbarui. ' + igSummary(r))).catch(e => pjToast('Gagal menarik data API: ' + (e.message || e))); }, 1500);
 
+  // ============================================================
+  // (9) PETA KERUSAKAN: semua titik issue (yang punya GPS) di peta satelit / jalan
+  // Mengikuti filter periode & ruas jalan di atas. Klik titik untuk membuka issue-nya.
+  // ============================================================
+  const pt = { map: null, layer: null, st: new Set(['Open', 'In progress', 'In review', 'Closed']), spk: new Set(['belum', 'sudah']), fitted: false };
+  async function ptEnsure() {
+    if (pt.map) return true;
+    try { await loadLeaflet(); } catch (e) { $('ptMsg').textContent = e.message; return false; }
+    const L = window.L;
+    $('ptMsg').remove();
+    pt.map = L.map('ptMap', { maxZoom: 21, zoomControl: true });
+    const bl = baseLayers(L); bl['Satelit'].addTo(pt.map);
+    L.control.layers(bl, null, { position: 'topright' }).addTo(pt.map);
+    L.control.scale({ imperial: false }).addTo(pt.map);
+    pt.layer = L.layerGroup().addTo(pt.map);
+    pt.map.setView([-6.30, 106.66], 14);
+    return true;
+  }
+  function ptItems() {
+    if (!model) return [];
+    return model.filtered.filter(i => i.lat != null && i.lon != null);
+  }
+  async function renderPeta(fit) {
+    if (document.body.dataset.activePage !== 'peta' && !pt.map) return;
+    if (!(await ptEnsure())) return;
+    const L = window.L;
+    const all = ptItems();
+    ['Open', 'In progress', 'In review', 'Closed'].forEach(s => { const el = $('ptN_' + s.replace(' ', '_')); if (el) el.textContent = all.filter(i => i.status === s).length; });
+    const list = all.filter(i => pt.st.has(i.status) && pt.spk.has(i.spkId ? 'sudah' : 'belum'));
+    pt.layer.clearLayers();
+    const pts = [];
+    list.forEach(i => {
+      const app = String(i.key).startsWith('id:app:') ? appIssues.list.find(t => 'id:app:' + t.id === i.key) : null;
+      const id = app ? app.id : 'f:' + i.key;
+      const m = L.marker([i.lat, i.lon], { icon: pinIcon(L, STATUS_COL[i.status] || '#f59e0b', TYPE_LETTER[i.type] || String(i.type || '?')[0]), title: i.ruas + ' ' + i.code });
+      m.bindPopup('<div class="pt-pop"><b>' + esc(i.code) + '</b> \u00b7 ' + esc(i.ruas) + '<br>' + esc(i.type) + ' \u00b7 ' + esc(i.status) +
+        (i.luas ? '<br>Luas ' + num(i.luas, 3) + ' m\u00b2' : '') + '<br>' + (i.spkId ? 'SPK <b>' + esc(spkLabel(i.spkId)) + '</b>' : '<span style="color:#b45309">Belum SPK</span>') +
+        (i.start ? '<br>Start ' + fmtTgl(i.start) + (i.due ? ' \u00b7 Due ' + fmtTgl(i.due) : '') : '') +
+        '<br><button type="button" class="pt-open" data-ptruas="' + esc(i.ruas) + '" data-ptid="' + esc(id) + '">Buka issue \u2192</button></div>');
+      m.addTo(pt.layer); pts.push([i.lat, i.lon]);
+    });
+    const noGps = model ? model.filtered.length - all.length : 0;
+    $('ptNote').textContent = list.length + ' titik tampil di peta (mengikuti filter periode & ruas di atas)' + (noGps ? ' \u00b7 ' + noGps + ' titik tidak punya GPS sehingga tidak tampil' : '') + ' \u00b7 Citra satelit \u00a9 Esri; peta jalan \u00a9 OpenStreetMap.';
+    setTimeout(() => pt.map.invalidateSize(), 30);
+    if ((fit || !pt.fitted) && pts.length) { pt.map.fitBounds(pts, { padding: [30, 30], maxZoom: 19 }); pt.fitted = true; }
+  }
+  window.renderPeta = renderPeta;
+  document.addEventListener('click', e => {
+    const c = e.target.closest('#ptStatus [data-st], #ptSpk [data-spk]');
+    if (c) {
+      const set = c.dataset.st ? pt.st : pt.spk, key = c.dataset.st || c.dataset.spk;
+      if (set.has(key)) set.delete(key); else set.add(key);
+      c.classList.toggle('on', set.has(key)); renderPeta(false); return;
+    }
+    if (e.target.closest('#ptFit')) { renderPeta(true); return; }
+    const o = e.target.closest('.pt-open');
+    if (o) {
+      const ruas = o.dataset.ptruas, id = o.dataset.ptid;
+      openRuas(ruas, 'issues').then(() => setTimeout(() => { isOrder = isItems().map(x => x.id); isOpenById(id); }, 150));
+    }
+  });
+
   // ---------- orkestrasi ----------
   function refresh() {
     compute();
@@ -7976,6 +8326,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     renderDataSpk();
     renderProjects();
     syncActivePage();
+    if (document.body.dataset.activePage === 'peta') renderPeta(false);
   }
   window.refreshV2 = refresh;
   if (typeof window.recomputeCostPage === 'function') {
