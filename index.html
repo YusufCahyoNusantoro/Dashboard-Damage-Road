@@ -1099,6 +1099,23 @@
   .lf-zone { background: none; border: none; pointer-events: none; }
   .lf-zone span { display: inline-block; transform: translateX(-50%); white-space: nowrap; font: 800 12px Inter, Arial, sans-serif; text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px #fff; }
 
+  .zn-box { border: 1px solid #fdba74; background: #fff7ed; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 12.5px; }
+  .zn-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .zn-id { font-weight: 800; color: #c2410c; font-family: 'IBM Plex Mono', monospace; }
+  .zn-sug { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: #fff; border: 1px dashed #fb923c; border-radius: 8px; padding: 6px 8px; margin-top: 6px; }
+  .zn-sug span { flex: 1 1 200px; }
+  .zn-sug .btn-ghost, .zn-acts .btn-ghost { padding: 4px 10px; font-size: 12px; }
+  .zn-acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  button.rep-step { cursor: pointer; font-family: inherit; }
+  .rep-chip.sug { background: #fff; border: 1px dashed #fb923c; color: #c2410c; }
+  .zp-list { max-height: 50vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; margin-top: 8px; }
+  .zp-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 13px; cursor: pointer; }
+  .zp-row[hidden] { display: none; }
+  .zp-row:hover { background: var(--bg-sunken); }
+  .zp-row span { flex: 1; color: var(--ink-500); font-size: 12px; }
+  .zp-row em { font-style: normal; font-size: 11.5px; color: #c2410c; font-weight: 600; }
+  .rs-pin-ovl { cursor: pointer; }
+
 </style>
 </head>
 <body>
@@ -2149,7 +2166,7 @@
           <button type="button" class="upload-btn" id="isCreate"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1"/></svg> Create issue</button>
           <div class="is-filters">
             <div class="bs-input-group" style="flex:1 1 220px; max-width:300px;"><span class="bs-input-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg></span><input id="isSearch" type="text" class="bs-search-input" placeholder="ID, kode, title, assigned to..."></div>
-            <select id="isStatus" class="pj-select" aria-label="Filter status"><option value="">Semua status</option><option>Open</option><option>In progress</option><option>In review</option><option>Closed</option></select>
+            <select id="isStatus" class="pj-select" aria-label="Filter status"><option value="">Semua status</option><option value="__saran">Perlu dicek: saran berulang</option><option value="__zona">Kerusakan berulang (zona)</option><option>Open</option><option>In progress</option><option>In review</option><option>Closed</option></select>
             <select id="isType" class="pj-select" aria-label="Filter type"></select>
             <select id="isVer" class="pj-select" aria-label="Filter versi DWG"></select>
           </div>
@@ -6536,26 +6553,80 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     }
     return tot ? hit / tot : 0;
   }
+  // Zona berulang DITENTUKAN USER: issue yang ditandai satu zona punya t.zone yang sama (mis. 'Z-03').
+  // Kotak bidang yang bertumpuk hanya menjadi SARAN; user yang memutuskan Setujui / Bukan.
   const zoneCache = {};
   function zonesOf(ruas) {
     aiEnsure();
     const key = ruas + '|' + aiVer + '|' + appIssues.list.length;
     if (zoneCache[ruas] && zoneCache[ruas].key === key) return zoneCache[ruas];
-    const list = appIssues.list.filter(t => t.ruas === ruas && t.poly && t.poly.length > 2)
-      .sort((a, b) => String(a.created || '').localeCompare(String(b.created || '')) || (a.num || 0) - (b.num || 0));
-    const par = list.map((_, i) => i), find = i => par[i] === i ? i : (par[i] = find(par[i]));
-    for (let i = 0; i < list.length; i++) for (let k = i + 1; k < list.length; k++) {
-      if (find(i) === find(k)) continue;
-      if (polyOverlapRatio(list[i].poly, list[k].poly) >= ZONE_RATIO) par[find(k)] = find(i);
-    }
-    const groups = {}; list.forEach((t, i) => { (groups[find(i)] = groups[find(i)] || []).push(t); });
-    const zones = Object.values(groups).sort((a, b) => String(a[0].created || '').localeCompare(String(b[0].created || '')) || (a[0].num || 0) - (b[0].num || 0))
-      .map((m, i) => ({ id: 'Z-' + String(i + 1).padStart(2, '0'), members: m, n: m.length }));
+    const order = (a, b) => (a.firstV || a.fileV || 0) - (b.firstV || b.fileV || 0) || String(a.start || a.created || '').localeCompare(String(b.start || b.created || '')) || (a.num || 0) - (b.num || 0);
+    const groups = {};
+    appIssues.list.forEach(t => { if (t.ruas === ruas && t.zone) (groups[t.zone] = groups[t.zone] || []).push(t); });
+    const zones = Object.keys(groups).sort(natural).map(id => ({ id: id, members: groups[id].sort(order), n: groups[id].length }));
     const byIssue = {};
     zones.forEach(z => z.members.forEach((t, k) => { byIssue[t.id] = { zone: z, k: k + 1, n: z.n }; }));
     return (zoneCache[ruas] = { key: key, zones: zones, byIssue: byIssue });
   }
-  function zoneInfo(t) { return t && t.poly ? zonesOf(t.ruas).byIssue[t.id] || null : null; }
+  function zoneInfo(t) { return t && t.zone ? zonesOf(t.ruas).byIssue[t.id] || null : null; }
+  function zoneNextId(ruas) {
+    let m = 0; appIssues.list.forEach(t => { if (t.ruas === ruas && t.zone) { const n = parseInt(String(t.zone).replace(/\D/g, ''), 10); if (n > m) m = n; } });
+    return 'Z-' + String(m + 1).padStart(2, '0');
+  }
+  // saran: issue lain di ruas yang kotaknya bertumpuk >= 30% (toleransi 0,5 m), belum satu zona, dan belum ditolak user
+  function zoneSuggestions(t) {
+    if (!t || !t.poly || t.poly.length < 3 || t.linkedKey) return [];
+    const no = new Set(t.zoneNo || []);
+    return appIssues.list.filter(o => o.id !== t.id && o.ruas === t.ruas && o.poly && o.poly.length > 2 && !o.linkedKey && !no.has(o.id) && !(o.zoneNo || []).includes(t.id) && !(t.zone && o.zone === t.zone))
+      .map(o => ({ o: o, r: polyOverlapRatio(t.poly, o.poly) })).filter(x => x.r >= ZONE_RATIO).sort((a, b) => b.r - a.r);
+  }
+  // gabungkan beberapa issue ke satu zona (zona yang sudah ada dipakai; kalau ada beberapa, digabung ke yang paling awal)
+  function zoneJoin(ids, ruas) {
+    const ts = ids.map(id => appIssues.list.find(x => x.id === id)).filter(Boolean); if (ts.length < 2) return null;
+    const existing = Array.from(new Set(ts.map(t => t.zone).filter(Boolean))).sort(natural);
+    const target = existing[0] || zoneNextId(ruas);
+    existing.slice(1).forEach(z => appIssues.list.forEach(x => { if (x.ruas === ruas && x.zone === z) { x.zone = target; isLog(x, 'Zona ' + z + ' digabung ke ' + target); } }));
+    ts.forEach(t => { if (t.zone !== target) { t.zone = target; isLog(t, 'Ditandai kerusakan berulang di zona ' + target); } });
+    aiSave(); injectAppIssues(); recomputeAllSafe();
+    return target;
+  }
+  function zoneLeave(t) {
+    const z = t.zone; if (!z) return; delete t.zone; isLog(t, 'Dilepas dari zona ' + z);
+    const left = appIssues.list.filter(x => x.ruas === t.ruas && x.zone === z);
+    if (left.length === 1) { delete left[0].zone; isLog(left[0], 'Zona ' + z + ' dihapus (tinggal satu kerusakan)'); }
+    aiSave(); injectAppIssues(); recomputeAllSafe();
+  }
+  function zoneReject(t, o) {
+    t.zoneNo = Array.from(new Set((t.zoneNo || []).concat([o.id]))); o.zoneNo = Array.from(new Set((o.zoneNo || []).concat([t.id])));
+    isLog(t, 'Saran berulang dengan ' + o.code + ' ditolak'); aiSave();
+  }
+  // pilih issue lain di ruas ini untuk dijadikan satu zona dengan t (urut dari yang paling dekat)
+  function zonePicker(t) {
+    return new Promise(resolve => {
+      const others = appIssues.list.filter(o => o.id !== t.id && o.ruas === t.ruas && !o.linkedKey && o.x != null && !(t.zone && o.zone === t.zone))
+        .map(o => ({ o: o, d: Math.hypot(o.x - t.x, o.y - t.y), r: t.poly && o.poly ? polyOverlapRatio(t.poly, o.poly) : 0 })).sort((a, b) => b.r - a.r || a.d - b.d);
+      const wrap = document.createElement('div');
+      wrap.className = 'v2-modal ui-dialog';
+      wrap.innerHTML = '<div class="v2-modal-box" role="dialog" aria-modal="true" style="width:600px;"><h3 style="margin:0 0 4px;font-size:16px;">' + (t.zone ? 'Tambah kerusakan ke zona ' + esc(t.zone) : 'Tandai berulang dengan\u2026') + '</h3>' +
+        '<p class="sub" style="margin:0 0 10px;">Centang kerusakan yang berada di lokasi yang sama dengan <b>' + esc(t.code) + '</b>. Urutan: kotak bertumpuk paling banyak, lalu paling dekat.</p>' +
+        '<input type="text" class="ui-input zp-q" placeholder="Cari kode\u2026">' +
+        '<div class="zp-list">' + (others.map(x => '<label class="zp-row"><input type="checkbox" value="' + esc(x.o.id) + '"><b>' + esc(x.o.code) + '</b><span>' + esc(x.o.type) + ' \u00b7 ' + esc(statusOfAi(x.o)) + ' \u00b7 V' + (x.o.firstV || x.o.fileV || '?') +
+          (x.o.zone ? ' \u00b7 zona ' + esc(x.o.zone) : '') + '</span><em>' + (x.r >= 0.01 ? 'bertumpuk ' + Math.round(x.r * 100) + '%' : Math.round(x.d) + ' m') + '</em></label>').join('') || '<p class="sub">Belum ada kerusakan lain di ruas ini.</p>') + '</div>' +
+        '<div class="v2-modal-foot"><button type="button" class="btn-ghost" data-zp="x">Batal</button><button type="button" class="upload-btn" data-zp="ok">Jadikan satu zona</button></div></div>';
+      document.body.appendChild(wrap);
+      const done = v => { document.removeEventListener('keydown', key, true); wrap.remove(); resolve(v); };
+      const key = e => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); done(null); } };
+      document.addEventListener('keydown', key, true);
+      wrap.querySelector('.zp-q').addEventListener('input', e => { const q = e.target.value.trim().toLowerCase(); wrap.querySelectorAll('.zp-row').forEach(r => { r.hidden = q && !r.textContent.toLowerCase().includes(q); }); });
+      wrap.addEventListener('click', e => {
+        const b = e.target.closest('[data-zp]'); if (!b) { if (e.target === wrap) done(null); return; }
+        if (b.dataset.zp === 'x') { done(null); return; }
+        const ids = Array.from(wrap.querySelectorAll('.zp-row input:checked')).map(i => i.value);
+        if (!ids.length) { uiAlert('Centang minimal satu kerusakan.'); return; }
+        done(ids);
+      });
+    });
+  }
   const ZONE_COL = n => n >= 3 ? '#dc2626' : n === 2 ? '#f97316' : null;
   // DWG versi baru -> titik kerusakan otomatis
   function applyDwgToIssues(ruas, fileId, v, geom, dateISO) {
@@ -6596,11 +6667,10 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       // zona ini pernah rusak & kerusakan sebelumnya sudah diperbaiki (Closed) -> kerusakan berulang di zona yang sama
       const prev = newest(ruasPolys.filter(t => !used.has(t.id) && statusOfAi(t) === 'Closed' && polyOverlapRatio(t.poly, d.pts) >= ZONE_RATIO));
       if (prev) {
-        prev.nextId = base.id;
         const code = nextBaseCode(ruas, d.kat);
-        base.log.push({ at: new Date().toISOString(), text: 'Kerusakan berulang di zona yang sama dengan ' + prev.code + ' (sudah diperbaiki)' });
-        isLog(prev, 'Zona ini rusak lagi di DWG V' + v + ' \u2192 ' + code);
-        appIssues.list.push(Object.assign(base, { code: code, status: 'Open', parentId: prev.id, repeat: true }));
+        base.log.push({ at: new Date().toISOString(), text: 'Kemungkinan berulang: kotaknya bertumpuk dengan ' + prev.code + ' yang sudah diperbaiki. Cek & tandai di bagian Kerusakan berulang.' });
+        isLog(prev, 'Ada kerusakan baru di kotak yang sama di DWG V' + v + ' \u2192 ' + code + ' (saran berulang)');
+        appIssues.list.push(Object.assign(base, { code: code, status: 'Open' }));
         cand.push(base); used.add(base.id); res.berulang++; res.berulangList.push(code); res.baru++;
         return;
       }
@@ -6826,7 +6896,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
           mm.forEach(x => { const k = 'arsiran ' + x.fill + ' / garis batas ' + x.outline; grp[k] = (grp[k] || 0) + 1; });
           msg += ' \u26A0 Perlu dicek: ' + mm.length + ' area punya layer berbeda antara arsiran dan garis batasnya (' + Object.keys(grp).map(k => grp[k] + '\u00d7 ' + k).join(', ') + '). Kategori diambil dari arsiran.';
         }
-        if (!r.manual) msg += ' Tagging otomatis: ' + geom.dmg.length + ' bidang \u2192 ' + r.baru + ' issue baru' + (r.berulang ? ' (berulang: ' + r.berulangList.join(', ') + ')' : '') +
+        if (!r.manual) msg += ' Tagging otomatis: ' + geom.dmg.length + ' bidang \u2192 ' + r.baru + ' issue baru' + (r.berulang ? ' (kemungkinan berulang: ' + r.berulangList.join(', ') + ' \u2014 cek & tandai di detail issue)' : '') +
           (r.lanjut ? ', ' + r.lanjut + ' issue dari versi sebelumnya masih ada (kode & isian tetap)' : '') + (r.berubah ? ', ' + r.berubah + ' berubah kategori (' + r.berubahList.join(', ') + ')' : '') +
           (r.hilang ? ', ' + r.hilang + ' tidak ada lagi di V' + v : '') + '. Kode, title, status & type bisa diedit di tab Issues.';
         else if (r.manual) msg += ' ' + geom.dmg.length + ' area kerusakan terlihat di gambar (' + ver.dwg.ringan + ' ringan, ' + ver.dwg.sedang + ' sedang, ' + ver.dwg.berat + ' berat). Buat issue lewat tab Gambar & titik: klik area kerusakan, Tambah pin, atau Create issue.';
@@ -7274,7 +7344,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const p = ll(t.x, t.y); if (!p) return;
       const it = isItemFromApp(t);
       L.marker(p, { icon: pinIcon(L, faded ? color : (STATUS_COL[it.status] || '#f59e0b'), TYPE_LETTER[t.type] || '?', { small: faded, faded: faded }), title: t.code + (faded ? ' (V' + v + ')' : '') })
-        .addTo(rs.lpins).on('click', () => { if (!faded) { rsSelect(t.id); } }).bindTooltip(t.code + ' \u00b7 ' + t.type + (faded ? ' \u00b7 V' + v : ''));
+        .addTo(rs.lpins).on('click', () => rsSelect(t.id)).bindTooltip(t.code + ' \u00b7 ' + t.type + (faded ? ' \u00b7 V' + v : ''));
     });
     rsOvlKeys().forEach(k => pinsOf(+k.split('|')[1], true, rs.ovl[k].color));
     pinsOf(rs.geomV, false);
@@ -7382,7 +7452,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     // pin dari versi yang di-superimpose: kecil & transparan, warna versinya
     const ovlPins = rsOvlKeys().map(kk => { const v = +kk.split('|')[1], col = rs.ovl[kk].color; return rsIssuesOfVersion(rs.viewFile, v).map(t => {
       const r = R * 0.7, cx = SX(t.x), cy = SY(t.y) - r * 1.6;
-      return '<g class="rs-pin-ovl" opacity=".75" transform="translate(' + cx + ' ' + cy + ')"><title>' + esc(t.code) + ' \u00b7 V' + v + '</title><path d="M0 ' + (r * 1.6) + ' L' + (-r * 0.55) + ' ' + (r * 0.7) + ' A' + r + ' ' + r + ' 0 1 1 ' + (r * 0.55) + ' ' + (r * 0.7) + ' Z" fill="' + col + '" stroke="#fff" stroke-width="' + k + '"/>' +
+      return '<g class="rs-pin-ovl" data-pin="' + esc(t.id) + '" opacity=".75" transform="translate(' + cx + ' ' + cy + ')"><title>' + esc(t.code) + ' \u00b7 V' + v + '</title><path d="M0 ' + (r * 1.6) + ' L' + (-r * 0.55) + ' ' + (r * 0.7) + ' A' + r + ' ' + r + ' 0 1 1 ' + (r * 0.55) + ' ' + (r * 0.7) + ' Z" fill="' + col + '" stroke="#fff" stroke-width="' + k + '"/>' +
         '<text y="' + (r * 0.38) + '" text-anchor="middle" font-size="' + (r * 1.05) + '" font-weight="700" fill="#fff" font-family="Inter, sans-serif">' + (TYPE_LETTER[t.type] || '?') + '</text></g>'; }).join(''); }).join('');
     g.innerHTML = ovlPins + rsPins().map(t => {
       const mi = model && model.issues.find(i => i.key === (t.linkedKey || 'id:app:' + t.id));
@@ -7662,7 +7732,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     tSel.innerHTML = '<option value="">Semua type</option>' + isActiveTypes().map(x => '<option>' + esc(x.name) + '</option>').join('');
     tSel.value = curT;
     const term = ($('isSearch').value || '').trim().toLowerCase(), st = $('isStatus').value, ty = tSel.value, ver = vSel.value;
-    let list = items.filter(it => (!st || it.status === st) && (!ty || it.type === ty) &&
+    const stOk = it => !st || (st === '__saran' ? !!(it.t && zoneSuggestions(it.t).length) : st === '__zona' ? !!(it.t && it.t.zone) : it.status === st);
+    let list = items.filter(it => stOk(it) && (!ty || it.type === ty) &&
       (!term || [it.num ? '#' + it.num : '', it.code, it.title, it.assignee, it.company, it.spk].join(' ').toLowerCase().includes(term)));
     if (ver) {
       if (ver.startsWith('new')) { const v = parseInt(ver.slice(3), 10); list = list.filter(it => it.firstV === v); }
@@ -7676,7 +7747,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const b = baseOf(it.code), n = b != null ? cnt[b] : 0, zi = it.t ? zoneInfo(it.t) : null;
       return '<tr class="is-row' + (isState.sel === it.id ? ' sel' : '') + (it.superseded ? ' pj-archived' : '') + '" data-isid="' + esc(it.id) + '" tabindex="0">' +
         '<td class="is-id">' + (it.num ? '#' + it.num : '<span style="color:var(--ink-400);">F</span>') + '</td>' +
-        '<td><b>' + esc(it.code) + '</b>' + (zi && zi.n > 1 ? ' <span class="rep-chip' + (zi.k > 1 ? ' on' : '') + '" title="Zona ' + zi.zone.id + ': rusak ' + zi.n + '\u00d7 di kotak bidang yang sama">' + zi.zone.id + ' \u00b7 ke-' + zi.k + '/' + zi.n + '</span>'
+        '<td><b>' + esc(it.code) + '</b>' + (!zi && it.t && zoneSuggestions(it.t).length ? ' <span class="rep-chip sug" title="Kotaknya bertumpuk dengan kerusakan lain. Buka detail untuk Setujui / Bukan.">saran berulang</span>' : '') + (zi && zi.n > 1 ? ' <span class="rep-chip' + (zi.k > 1 ? ' on' : '') + '" title="Zona ' + zi.zone.id + ': rusak ' + zi.n + '\u00d7 di kotak bidang yang sama">' + zi.zone.id + ' \u00b7 ke-' + zi.k + '/' + zi.n + '</span>'
           : (!zi && n > 1 ? ' <span class="rep-chip' + (subOf(it.code) > 1 ? ' on' : '') + '">ke-' + subOf(it.code) + '/' + n + '</span>' : '')) + '</td>' +
         '<td>' + esc(it.title) + '</td><td class="is-st">' + isStatusDot(it.status) + '</td>' +
         '<td>' + (it.spk ? '<span class="spk-chip">' + esc(it.spk) + '</span>' : '<span class="spk-none">Belum SPK</span>') + '</td><td class="is-ty">' + isTypeBadge(it.type) + '</td>' +
@@ -7815,7 +7886,15 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const bb = baseOf(it.code), all = bb != null ? ruasCodes(rs.ruas).filter(c => baseOf(c) === bb).sort((a, b) => subOf(a) - subOf(b)) : [];
     let rep = '';
     const zi = t ? zoneInfo(t) : null;
-    if (zi && zi.n > 1) rep = '<div class="rep-box">Zona <b>' + zi.zone.id + '</b> (kotak bidang yang sama) sudah rusak <b>' + zi.n + ' kali</b>, ini kejadian <b>ke-' + zi.k + '</b>.<div class="rep-seq">' +
+    const sug = editable ? zoneSuggestions(t) : [];
+    if (editable) {
+      rep += '<div class="zn-box"><div class="zn-h"><b>Kerusakan berulang</b>' + (zi ? '<span class="zn-id">' + zi.zone.id + ' \u00b7 ' + zi.n + '\u00d7</span>' : '<span class="is-hint">belum termasuk zona</span>') + '</div>' +
+        (zi ? '<div class="rep-seq">' + zi.zone.members.map(m => '<button type="button" class="rep-step' + (m.id === t.id ? ' me' : '') + '" data-zgo="' + esc(m.id) + '" title="' + esc(statusOfAi(m)) + (m.closedAt ? ' \u00b7 ditutup ' + fmtTgl(fromISO(m.closedAt)) : '') + '">' + esc(m.code) + ' \u00b7 V' + (m.firstV || m.fileV || '?') + '</button>').join('<i>\u2192</i>') + '</div>' : '') +
+        sug.map(x => '<div class="zn-sug"><span>Saran: <b>' + esc(x.o.code) + '</b> \u00b7 kotak bertumpuk ' + Math.round(x.r * 100) + '% \u00b7 ' + esc(statusOfAi(x.o)) + (x.o.zone ? ' \u00b7 zona ' + esc(x.o.zone) : '') + '</span>' +
+          '<button type="button" class="btn-ghost" data-zok="' + esc(x.o.id) + '">Setujui</button><button type="button" class="btn-ghost" data-zno="' + esc(x.o.id) + '">Bukan</button></div>').join('') +
+        '<div class="zn-acts"><button type="button" class="btn-ghost" data-zadd="1">' + (zi ? '+ Tambah kerusakan ke zona ini' : '+ Tandai berulang dengan\u2026') + '</button>' + (zi ? '<button type="button" class="btn-ghost btn-danger-text" data-zleave="1">Lepas dari zona</button>' : '') + '</div></div>';
+    }
+    if (!editable && zi && zi.n > 1) rep = '<div class="rep-box">Zona <b>' + zi.zone.id + '</b> sudah rusak <b>' + zi.n + ' kali</b>, ini kejadian <b>ke-' + zi.k + '</b>.<div class="rep-seq">' +
       zi.zone.members.map(m => '<span class="rep-step' + (m.id === t.id ? ' me' : '') + '" title="' + esc(statusOfAi(m)) + (m.closedAt ? ' \u00b7 ditutup ' + fmtTgl(fromISO(m.closedAt)) : '') + '">' + esc(m.code) + ' \u00b7 V' + (m.firstV || m.fileV || '?') + '</span>').join('<i>\u2192</i>') + '</div></div>';
     else if (!zi && all.length > 1) rep = '<div class="rep-box">Lokasi <b>#' + bb + '</b> sudah rusak <b>' + all.length + ' kali</b>, ini kejadian <b>ke-' + subOf(it.code) + '</b>.<div class="rep-seq">' +
       all.map(c => '<span class="rep-step' + (c === it.code ? ' me' : '') + '">' + esc(c) + '</span>').join('<i>\u2192</i>') + '</div></div>';
@@ -7870,6 +7949,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     el.onclick = e => {
       if (e.target.closest('[data-isclose]')) { onClose(); return; }
       const nv = e.target.closest('[data-isnav]'); if (nv) { isStep(parseInt(nv.dataset.isnav, 10)); return; }
+      const zAfter = () => { isAfterChange(t); if (rs.tab === 'viewer') { rsDrawZones(); rsRenderPins(); } isRenderDetail(el, isItemFromApp(t), onClose); };
+      const zok = e.target.closest('[data-zok]'); if (zok) { const id = zoneJoin([t.id, zok.dataset.zok], t.ruas); pjToast('Ditandai berulang di zona ' + id + '.'); zAfter(); return; }
+      const zno = e.target.closest('[data-zno]'); if (zno) { const o = appIssues.list.find(x => x.id === zno.dataset.zno); if (o) zoneReject(t, o); zAfter(); return; }
+      if (e.target.closest('[data-zleave]')) { uiConfirm('Lepas ' + t.code + ' dari zona ' + t.zone + '?', { ok: 'Lepas' }).then(ok => { if (ok) { zoneLeave(t); zAfter(); } }); return; }
+      if (e.target.closest('[data-zadd]')) { zonePicker(t).then(ids => { if (!ids) return; const id = zoneJoin([t.id].concat(ids), t.ruas); pjToast(ids.length + ' kerusakan ditandai berulang di zona ' + id + '.'); zAfter(); }); return; }
+      const zg = e.target.closest('[data-zgo]'); if (zg && zg.dataset.zgo !== t.id) { const o = appIssues.list.find(x => x.id === zg.dataset.zgo); if (o) { if (el.id === 'rsSide') rsSelect(o.id); else isOpenById(o.id); } return; }
       const tb = e.target.closest('[data-istab]'); if (tb) { el.dataset.tab = tb.dataset.istab; isRenderDetail(el, it, onClose); return; }
       const ac = e.target.closest('[data-isact]');
       if (ac && ac.dataset.isact === 'full') { isOrder = isItems().map(x => x.id); isOpenById(it.id); return; }
