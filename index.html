@@ -6656,12 +6656,14 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         else isLog(open, 'Masih terlihat di DWG V' + v + ', tidak ada perubahan');
         if (worse) { res.berubah++; res.berubahList.push((open.code || '') + ' ' + open.type + '\u2192' + d.kat); }
         Object.assign(open, { areaDwg: d.area, dwgKat: d.kat, x: d.at[0], y: d.at[1], poly: d.pts, fileId: fileId, fileV: v, active: true, lat: gps && gps.lat, lon: gps && gps.lon, centered: 1 });
+        open.geoms = open.geoms || {}; open.geoms[v] = { x: d.at[0], y: d.at[1], poly: d.pts, kat: d.kat, area: d.area };
         if (open.src === 'pin') { open.src = 'dwg'; open.firstV = open.firstV || open.fileV; }
         // kategori hanya diganti kalau di gambar memang berubah; hasil edit manual (kode/title/type) tetap dihormati
         if (!open.linkedKey && worse) { open.type = d.kat; open.code = letterFix(open.code, d.kat); if (!open.titleEdited) open.title = d.kat; }
         return;
       }
       const base = { id: 'ai' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ruas: ruas, src: 'dwg', fileId: fileId, fileV: v, firstV: v, active: true,
+        geoms: { [v]: { x: d.at[0], y: d.at[1], poly: d.pts, kat: d.kat, area: d.area } },
         type: d.kat, dwgKat: d.kat, luas: 0, areaDwg: d.area, x: d.at[0], y: d.at[1], poly: d.pts, lat: gps && gps.lat, lon: gps && gps.lon, created: dateISO, start: dateISO, noSpk: '', note: '', centered: 1,
         num: isNextNum(ruas), title: d.kat, log: [{ at: new Date().toISOString(), text: 'Tagging otomatis dari DWG V' + v + ' (bidang ' + d.kat.toLowerCase() + ')' }] };
       // zona ini pernah rusak & kerusakan sebelumnya sudah diperbaiki (Closed) -> kerusakan berulang di zona yang sama
@@ -7101,7 +7103,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     }
     $('rsLoading').hidden = true;
     const cogoNote = rs.geom && rs.geom.cogo && !rs.survey.length ? ' \u00b7 Gambar ini berisi ' + rs.geom.cogo + ' titik survey Civil 3D yang belum bisa dibaca langsung; upload file PNEZD-nya ke folder Survey supaya titik bernomor tampil.' : '';
-    $('rsViewNote').textContent = (rs.geomLatest ? 'Scroll / cubit untuk zoom, tarik untuk menggeser. Klik area berwarna untuk membuat issue di area itu, klik pin untuk melihat issue.' : 'Menampilkan versi lama (V' + v + '). Pin menunjukkan titik saat ini; area berwarna mengikuti versi yang dipilih.') + cogoNote;
+    $('rsViewNote').textContent = (rs.geomLatest ? 'Scroll / cubit untuk zoom, tarik untuk menggeser. Klik area berwarna untuk membuat issue di area itu, klik pin untuk melihat issue.' : 'Menampilkan versi lama (V' + v + '). Pin & bidang mengikuti posisinya di versi ini.') + cogoNote;
   }
   function rsSurveyBbox() {
     let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity;
@@ -7186,14 +7188,30 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   const OVL_COL = ['#7c3aed', '#0891b2', '#db2777', '#65a30d', '#ea580c'];
   rs.ovl = rs.ovl || {};          // { 'fileId|v': { g, color } }
   // issue yang "milik" versi tertentu dari file yang sedang dilihat
-  function rsIssuesOfVersion(fileId, v) {
+  // Posisi pin per versi: setiap versi DWG punya bentuk & letak bidangnya sendiri.
+  // Disimpan di t.geoms[v]; untuk data lama dicari otomatis dari bidang di versi itu yang paling bertumpuk.
+  let vposSaveT = null;
+  function vposOf(t, v, g) {
+    if (t.geoms && t.geoms[v]) return t.geoms[v].none ? null : t.geoms[v];
+    if (!t.poly || t.poly.length < 3) return { x: t.x, y: t.y };            // pin manual tanpa bidang
+    if (!g || !g.dmg) return { x: t.x, y: t.y };
+    let best = null, br = 0;
+    g.dmg.forEach(d => { const r = polyOverlapRatio(t.poly, d.pts); if (r > br) { br = r; best = d; } });
+    let pos = null;
+    if (best && br >= ZONE_RATIO) { const c = polyCenter(best.pts); pos = { x: Math.round(c[0] * 1000) / 1000, y: Math.round(c[1] * 1000) / 1000, poly: best.pts, kat: best.kat, area: best.area }; }
+    t.geoms = t.geoms || {}; t.geoms[v] = pos || { none: 1 };
+    clearTimeout(vposSaveT); vposSaveT = setTimeout(aiSave, 800);
+    return pos;
+  }
+  function rsIssuesOfVersion(fileId, v, g) {
     aiEnsure();
     return appIssues.list.filter(t => {
       if (t.ruas !== rs.ruas || t.x == null || t.fileId !== fileId) return false;
       // tampil dari versi pertama sampai versi terakhir dia masih ada di gambar;
       // pin manual di luar bidang hanya ada di versi tempat dia dibuat (firstV = fileV)
       const a = t.firstV || t.fileV, b = t.active ? (t.fileV || a) : (t.goneIn ? t.goneIn - 1 : t.fileV);
-      return v >= a && v <= b;
+      if (v < a || v > b) return false;
+      return g ? !!vposOf(t, v, g) : true;     // bidangnya harus memang ada di gambar versi itu
     });
   }
   async function rsGeomOf(f, v) {
@@ -7258,11 +7276,19 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       'Jalan': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 21, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap' })
     };
   }
-  function pinIcon(L, color, letter, opts) {
+  // bentuk pin berlabel kode (mis. "R12"): kapsul + ujung runcing; ujungnya tepat di titik (0,0)
+  function pinShape(label, s) {
+    const len = String(label || '?').length, fs = 11.5 * s, h = 20 * s, p = 7 * s, r = h / 2;
+    const w = Math.max(26, 12 + 7.1 * len) * s, x0 = -w / 2, x1 = w / 2, y0 = -(h + p), y1 = -p, a = 4.5 * s;
+    const d = 'M' + (x0 + r) + ' ' + y0 + 'H' + (x1 - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (x1 - r) + ' ' + y1 + 'H' + a + 'L0 0L' + (-a) + ' ' + y1 + 'H' + (x0 + r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (x0 + r) + ' ' + y0 + 'Z';
+    return { d: d, w: w, h: h + p, fs: fs, ty: y0 + h / 2 + fs * 0.36 };
+  }
+  function pinIcon(L, color, label, opts) {
     opts = opts || {};
-    const s = opts.small ? 0.75 : 1, w = 26 * s, h = 36 * s;
-    return L.divIcon({ className: 'lf-pin', iconSize: [w, h], iconAnchor: [w / 2, h], popupAnchor: [0, -h + 4],
-      html: '<svg width="' + w + '" height="' + h + '" viewBox="0 0 26 36"' + (opts.faded ? ' opacity=".6"' : '') + '><path d="M13 35 C13 35 25 20 25 12.5 A12 12 0 1 0 1 12.5 C1 20 13 35 13 35Z" fill="' + color + '" stroke="#fff" stroke-width="2"/><text x="13" y="17" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="Inter,Arial,sans-serif">' + esc(letter) + '</text></svg>' });
+    const sh = pinShape(label, opts.small ? 0.85 : 1), W = sh.w + 4, H = sh.h + 4;
+    return L.divIcon({ className: 'lf-pin', iconSize: [W, H], iconAnchor: [W / 2, H - 2], popupAnchor: [0, -H + 6],
+      html: '<svg width="' + W + '" height="' + H + '" viewBox="' + (-W / 2) + ' ' + (-(H - 2)) + ' ' + W + ' ' + H + '"' + (opts.faded ? ' opacity=".7"' : '') + '><path d="' + sh.d + '" fill="' + color + '" stroke="#fff" stroke-width="1.6"/>' +
+        '<text x="0" y="' + sh.ty + '" text-anchor="middle" font-size="' + sh.fs + '" font-weight="700" fill="#fff" font-family="Inter,Arial,sans-serif">' + esc(label) + '</text></svg>' });
   }
   const ll = (x, y) => { const g = toGps(x, y); return g ? [g.lat, g.lon] : null; };
   // ukuran huruf label = tinggi teks di gambar (meter) x piksel-per-meter pada zoom saat ini
@@ -7340,14 +7366,14 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     // label teks dari DWG (mis. angka luas 13.337) ikut tampil di peta, ukurannya mengikuti zoom
     rs.ltxtData = (rs.geom.texts || []).filter(t => Math.hypot(t.p[0] - cx, t.p[1] - cy) < R).map(t => ({ t: t, at: ll(t.p[0], t.p[1]) })).filter(x => x.at);
     rsMapTexts(); rsMapSurvey();
-    const pinsOf = (v, faded, color) => rsIssuesOfVersion(rs.viewFile, v).forEach(t => {
-      const p = ll(t.x, t.y); if (!p) return;
+    const pinsOf = (v, faded, color, g) => rsIssuesOfVersion(rs.viewFile, v, g).forEach(t => {
+      const q = vposOf(t, v, g) || t, p = ll(q.x, q.y); if (!p) return;
       const it = isItemFromApp(t);
-      L.marker(p, { icon: pinIcon(L, faded ? color : (STATUS_COL[it.status] || '#f59e0b'), TYPE_LETTER[t.type] || '?', { small: faded, faded: faded }), title: t.code + (faded ? ' (V' + v + ')' : '') })
+      L.marker(p, { icon: pinIcon(L, faded ? color : (STATUS_COL[it.status] || '#f59e0b'), t.code || TYPE_LETTER[t.type] || '?', { small: faded, faded: faded }), title: t.code + (faded ? ' (V' + v + ')' : '') })
         .addTo(rs.lpins).on('click', () => rsSelect(t.id)).bindTooltip(t.code + ' \u00b7 ' + t.type + (faded ? ' \u00b7 V' + v : ''));
     });
-    rsOvlKeys().forEach(k => pinsOf(+k.split('|')[1], true, rs.ovl[k].color));
-    pinsOf(rs.geomV, false);
+    rsOvlKeys().forEach(k => pinsOf(+k.split('|')[1], true, rs.ovl[k].color, rs.ovl[k].g));
+    pinsOf(rs.geomV, false, null, rs.geom);
     if (fit) { const a = ll(core[0], core[1]), b = ll(core[2], core[3]); if (a && b) rs.lmap.fitBounds([a, b], { padding: [12, 12] }); }
   }
   function rsFit() {
@@ -7415,7 +7441,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   function rsPins() {
     aiEnsure();
     if (!rs.viewFile) return appIssues.list.filter(t => t.ruas === rs.ruas && t.active && t.x != null && !t.nextId);
-    return rsIssuesOfVersion(rs.viewFile, rs.geomV);
+    return rsIssuesOfVersion(rs.viewFile, rs.geomV, rs.geom);
   }
   function rsRenderOverlays(k) {
     const v = rs.view, inV = (x, y) => SX(x) >= v.x && SX(x) <= v.x + v.w && SY(y) >= v.y && SY(y) <= v.y + v.h;
@@ -7450,18 +7476,17 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const R = 14 * k;
     document.querySelectorAll('#rsZone .zone-lbl').forEach(el => { el.setAttribute('x', el.dataset.zx); el.setAttribute('y', +el.dataset.zy + 20 * k); el.setAttribute('font-size', 12.5 * k); el.setAttribute('stroke-width', 3 * k); });
     // pin dari versi yang di-superimpose: kecil & transparan, warna versinya
-    const ovlPins = rsOvlKeys().map(kk => { const v = +kk.split('|')[1], col = rs.ovl[kk].color; return rsIssuesOfVersion(rs.viewFile, v).map(t => {
-      const r = R * 0.7, cx = SX(t.x), cy = SY(t.y) - r * 1.6;
-      return '<g class="rs-pin-ovl" data-pin="' + esc(t.id) + '" opacity=".75" transform="translate(' + cx + ' ' + cy + ')"><title>' + esc(t.code) + ' \u00b7 V' + v + '</title><path d="M0 ' + (r * 1.6) + ' L' + (-r * 0.55) + ' ' + (r * 0.7) + ' A' + r + ' ' + r + ' 0 1 1 ' + (r * 0.55) + ' ' + (r * 0.7) + ' Z" fill="' + col + '" stroke="#fff" stroke-width="' + k + '"/>' +
-        '<text y="' + (r * 0.38) + '" text-anchor="middle" font-size="' + (r * 1.05) + '" font-weight="700" fill="#fff" font-family="Inter, sans-serif">' + (TYPE_LETTER[t.type] || '?') + '</text></g>'; }).join(''); }).join('');
+    const ovlPins = rsOvlKeys().map(kk => { const v = +kk.split('|')[1], col = rs.ovl[kk].color, og = rs.ovl[kk].g; return rsIssuesOfVersion(rs.viewFile, v, og).map(t => {
+      const sh = pinShape(t.code, 0.85 * k), q = vposOf(t, v, og) || t;
+      return '<g class="rs-pin-ovl" data-pin="' + esc(t.id) + '" opacity=".75" transform="translate(' + SX(q.x) + ' ' + SY(q.y) + ')"><title>' + esc(t.code) + ' \u00b7 V' + v + '</title>' +
+        '<path d="' + sh.d + '" fill="' + col + '" stroke="#fff" stroke-width="' + 1.2 * k + '"/><text y="' + sh.ty + '" text-anchor="middle" font-size="' + sh.fs + '" font-weight="700" fill="#fff" font-family="Inter, sans-serif">' + esc(t.code) + '</text></g>'; }).join(''); }).join('');
     g.innerHTML = ovlPins + rsPins().map(t => {
       const mi = model && model.issues.find(i => i.key === (t.linkedKey || 'id:app:' + t.id));
       const status = mi ? mi.status : t.status;
-      const cx = SX(t.x), cy = SY(t.y) - R * 1.6;
-      const sel = rs.sel === t.id;
-      return '<g class="rs-pin" data-pin="' + esc(t.id) + '" transform="translate(' + cx + ' ' + cy + ')">' +
-        '<path d="M0 ' + (R * 1.6) + ' L' + (-R * 0.55) + ' ' + (R * 0.7) + ' A' + R + ' ' + R + ' 0 1 1 ' + (R * 0.55) + ' ' + (R * 0.7) + ' Z" fill="' + (STATUS_COL[status] || '#f59e0b') + '" stroke="' + (sel ? '#111827' : '#fff') + '" stroke-width="' + (sel ? 2.5 : 1.5) * k + '"/>' +
-        '<text y="' + (R * 0.38) + '" text-anchor="middle" font-size="' + (R * 1.05) + '" font-weight="700" fill="#fff" font-family="Inter, sans-serif">' + (TYPE_LETTER[t.type] || '?') + '</text></g>';
+      const sel = rs.sel === t.id, sh = pinShape(t.code, k), q = (rs.viewFile ? vposOf(t, rs.geomV, rs.geom) : null) || t;
+      return '<g class="rs-pin" data-pin="' + esc(t.id) + '" transform="translate(' + SX(q.x) + ' ' + SY(q.y) + ')"><title>' + esc(t.code) + ' \u00b7 ' + esc(t.type) + ' \u00b7 ' + esc(status) + '</title>' +
+        '<path d="' + sh.d + '" fill="' + (STATUS_COL[status] || '#f59e0b') + '" stroke="' + (sel ? '#111827' : '#fff') + '" stroke-width="' + (sel ? 2.5 : 1.5) * k + '"/>' +
+        '<text y="' + sh.ty + '" text-anchor="middle" font-size="' + sh.fs + '" font-weight="700" fill="#fff" font-family="Inter, sans-serif">' + esc(t.code) + '</text></g>';
     }).join('');
   }
   // pan / zoom (mouse, trackpad, sentuh)
@@ -7504,7 +7529,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         const hitA = hit && hit.closest && hit.closest('#rsDmg path[data-di]');
         const area = (hitA && rs.geom.dmg[+hitA.dataset.di]) || (rs.geom.dmg || []).find(d => inside([wx, wy], d.pts));
         if (area) {
-          const used = rsIssuesOfVersion(rs.viewFile, rs.geomV).find(t => inside([t.x, t.y], area.pts) && statusOfAi(t) !== 'Closed');
+          const used = rsIssuesOfVersion(rs.viewFile, rs.geomV, rs.geom).find(t => { const q = vposOf(t, rs.geomV, rs.geom) || t; return inside([q.x, q.y], area.pts) && statusOfAi(t) !== 'Closed'; });
           if (used) { rsSelect(used.id); return; }
           const at = polyCenter(area.pts);
           isOpenForm(null, 'code', { x: at[0], y: at[1], fileId: rs.viewFile, fileV: rs.geomV, poly: area.pts, kat: area.kat });
@@ -8568,7 +8593,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     list.forEach(i => {
       const app = String(i.key).startsWith('id:app:') ? appIssues.list.find(t => 'id:app:' + t.id === i.key) : null;
       const id = app ? app.id : 'f:' + i.key;
-      const m = L.marker([i.lat, i.lon], { icon: pinIcon(L, STATUS_COL[i.status] || '#f59e0b', TYPE_LETTER[i.type] || String(i.type || '?')[0]), title: i.ruas + ' ' + i.code });
+      const m = L.marker([i.lat, i.lon], { icon: pinIcon(L, STATUS_COL[i.status] || '#f59e0b', i.code || TYPE_LETTER[i.type] || '?'), title: i.ruas + ' ' + i.code });
       m.bindPopup('<div class="pt-pop"><b>' + esc(i.code) + '</b> \u00b7 ' + esc(i.ruas) + '<br>' + esc(i.type) + ' \u00b7 ' + esc(i.status) +
         (i.luas ? '<br>Luas ' + num(i.luas, 3) + ' m\u00b2' : '') + '<br>' + (i.spkId ? 'SPK <b>' + esc(spkLabel(i.spkId)) + '</b>' : '<span style="color:#b45309">Belum SPK</span>') +
         (i.start ? '<br>Start ' + fmtTgl(i.start) + (i.due ? ' \u00b7 Due ' + fmtTgl(i.due) : '') : '') +
