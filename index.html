@@ -6575,10 +6575,16 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   }
   // saran: issue lain di ruas yang kotaknya bertumpuk >= 30% (toleransi 0,5 m), belum satu zona, dan belum ditolak user
   function zoneSuggestions(t) {
-    if (!t || !t.poly || t.poly.length < 3 || t.linkedKey) return [];
+    if (!t || t.linkedKey) return [];
     const no = new Set(t.zoneNo || []);
-    return appIssues.list.filter(o => o.id !== t.id && o.ruas === t.ruas && o.poly && o.poly.length > 2 && !o.linkedKey && !no.has(o.id) && !(o.zoneNo || []).includes(t.id) && !(t.zone && o.zone === t.zone))
-      .map(o => ({ o: o, r: polyOverlapRatio(t.poly, o.poly) })).filter(x => x.r >= ZONE_RATIO).sort((a, b) => b.r - a.r);
+    const famT = /\.\d+$/.test(String(t.code || '')) || appIssues.list.some(o => o.ruas === t.ruas && o.id !== t.id && baseOf(o.code) === baseOf(t.code) && /\.\d+$/.test(String(o.code || '')));
+    return appIssues.list.filter(o => o.id !== t.id && o.ruas === t.ruas && !o.linkedKey && !no.has(o.id) && !(o.zoneNo || []).includes(t.id) && !(t.zone && o.zone === t.zone))
+      .map(o => {
+        const r = t.poly && t.poly.length > 2 && o.poly && o.poly.length > 2 ? polyOverlapRatio(t.poly, o.poly) : 0;
+        // kode lama hasil aturan sebelumnya: B1, B1.2, B1.3 = satu lokasi
+        const fam = famT && baseOf(o.code) != null && baseOf(o.code) === baseOf(t.code);
+        return { o: o, r: r, fam: fam };
+      }).filter(x => x.r >= ZONE_RATIO || x.fam).sort((a, b) => b.r - a.r || natural(a.o.code, b.o.code));
   }
   // gabungkan beberapa issue ke satu zona (zona yang sudah ada dipakai; kalau ada beberapa, digabung ke yang paling awal)
   function zoneJoin(ids, ruas) {
@@ -6716,7 +6722,14 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     injecting = false;
     return changedAny;
   }
-  function recomputeAllSafe() { if (typeof window.recomputeAll === 'function') window.recomputeAll(); else refresh(); }
+  // setelah data issue berubah: rentang tanggal data diperbarui, lalu preset periode yang aktif
+  // (1/3/6/12 bln / Semua) dihitung ulang supaya issue baru dengan tanggal di luar rentang lama tetap terhitung
+  function recomputeAllSafe() {
+    if (typeof refreshDateRange === 'function') refreshDateRange();
+    const act = document.querySelector('.period-preset.active');
+    if (act) { act.click(); return; }
+    if (typeof window.recomputeAll === 'function') window.recomputeAll(); else refresh();
+  }
   (function watchDamageTable() {
     const tb = document.querySelector('#damageTable tbody'); if (!tb) return;
     new MutationObserver(() => {
@@ -7336,7 +7349,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     try { await loadLeaflet(); } catch (e) { uiAlert(e.message); rsSetMapMode(false); return; }
     if (!rs.lmap) {
       const L = window.L;
-      rs.lmap = L.map('rsMap', { zoomControl: true, maxZoom: 21, attributionControl: true });
+      rs.lmap = L.map('rsMap', { zoomControl: true, maxZoom: 21, attributionControl: true, zoomSnap: 0.1, zoomDelta: 0.5, wheelPxPerZoomLevel: 120 });
       rs.lbase = baseLayers(L); rs.lbase['Satelit'].addTo(rs.lmap);
       L.control.layers(rs.lbase, null, { position: 'topleft' }).addTo(rs.lmap);
       rs.ldwg = L.layerGroup().addTo(rs.lmap); rs.lpins = L.layerGroup().addTo(rs.lmap);
@@ -7374,7 +7387,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     });
     rsOvlKeys().forEach(k => pinsOf(+k.split('|')[1], true, rs.ovl[k].color, rs.ovl[k].g));
     pinsOf(rs.geomV, false, null, rs.geom);
-    if (fit) { const a = ll(core[0], core[1]), b = ll(core[2], core[3]); if (a && b) rs.lmap.fitBounds([a, b], { padding: [12, 12] }); }
+    if (fit) rsMapFit();
   }
   function rsFit() {
     const bb = rsCoreBox(rs.geom); if (!bb) return;
@@ -7388,6 +7401,14 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     } else if (cv) cv.style.height = '';
     rs.view = { x: SX(bb[0]) - pad, y: SY(bb[3]) - pad, w: w + pad * 2, h: h + pad * 2 };
     rsApplyView();
+    // mode Superimpose peta: peta ikut "pas layar" ke batas gambar yang sama
+    if (rs.mapMode && rs.lmap) setTimeout(() => { rs.lmap.invalidateSize(); rsMapFit(); }, 60);
+  }
+  function rsMapFit() {
+    if (!rs.lmap || !rs.geom) return;
+    const bb = rsCoreBox(rs.geom); if (!bb) return;
+    const pts = [[bb[0], bb[1]], [bb[2], bb[1]], [bb[2], bb[3]], [bb[0], bb[3]]].map(p => ll(p[0], p[1])).filter(Boolean);
+    if (pts.length) rs.lmap.fitBounds(pts, { padding: [6, 6] });
   }
   if ($('rsFit')) $('rsFit').addEventListener('click', rsFit);
   if ($('rsAutoTag')) { $('rsAutoTag').checked = autoTagOn(); $('rsAutoTag').addEventListener('change', e => { try { localStorage.setItem(AUTO_KEY, e.target.checked ? '1' : '0'); } catch (err) { /* abaikan */ } pjToast('Tagging otomatis ' + (e.target.checked ? 'aktif' : 'nonaktif') + '.'); }); }
@@ -7564,19 +7585,6 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     if (area) { const c = polyCenter(area.pts); isPlacementPicked({ x: Math.round(c[0] * 1000) / 1000, y: Math.round(c[1] * 1000) / 1000, fileId: rs.viewFile, fileV: rs.geomV, poly: area.pts, kat: area.kat }); return; }
     isPlacementPicked({ x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000, fileId: rs.viewFile, fileV: rs.geomV });
   }
-  function rsAddPinAtOld(x, y) {
-    aiEnsure();
-    const gps = toGps(x, y);
-    const host = appIssues.list.filter(q => q.ruas === rs.ruas && q.poly && q.poly.length > 2 && inside([x, y], q.poly) && baseOf(q.code) != null)
-      .sort((a, b) => (b.fileV || 0) - (a.fileV || 0))[0];
-    const isRepeat = host && statusOfAi(host) === 'Closed';
-    if (host && !isRepeat && !window.confirm('Titik ini berada di area ' + host.code + ' yang masih ' + statusOfAi(host) + '. Tetap buat pin baru?')) { rsSetPinMode(false); return; }
-    const t = { id: 'ai' + Date.now().toString(36), ruas: rs.ruas, src: 'pin', active: true, code: isRepeat ? nextRepeatCode(rs.ruas, baseOf(host.code), 'Ringan') : nextBaseCode(rs.ruas, 'Ringan'), parentId: isRepeat ? host.id : undefined, repeat: !!isRepeat, type: 'Ringan', status: 'Open', luas: 0,
-      x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000, lat: gps && gps.lat, lon: gps && gps.lon, created: toISO(new Date()), noSpk: '', note: '' };
-    appIssues.list.push(t); aiSave(); rsSetPinMode(false);
-    if (injectAppIssues()) recomputeAllSafe();
-    rsSelect(t.id); rsRenderHead();
-  }
   function rsSelect(id) {
     aiEnsure();
     const tt = appIssues.list.find(x => x.id === id); if (!tt) return;
@@ -7584,62 +7592,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     isRenderDetail($('rsSide'), isItemFromApp(tt), () => { rs.sel = null; $('rsSide').hidden = true; rsRenderPins(); });
     $('rsSide').hidden = false;
   }
-  function rsSelectOld(id) {
-    aiEnsure();
-    const t = appIssues.list.find(x => x.id === id); if (!t) return;
-    rs.sel = id; rsRenderPins();
-    const mi = model && model.issues.find(i => i.key === (t.linkedKey || 'id:app:' + t.id));
-    const forma = !!t.linkedKey;
-    const status = mi ? mi.status : t.status, spk = mi && mi.spkId ? spkLabel(mi.spkId) : '';
-    const opt = (list, v) => list.map(o => '<option' + (o === v ? ' selected' : '') + '>' + o + '</option>').join('');
-    const bb = baseOf(t.code), all = bb != null ? ruasCodes(t.ruas).filter(c => baseOf(c) === bb).sort((a, b) => subOf(a) - subOf(b)) : [];
-    const kth = subOf(t.code);
-    const TN = { R: 'Ringan', S: 'Sedang', B: 'Berat' };
-    let repInfo = all.length > 1 ? '<div class="rep-box">Lokasi <b>#' + bb + '</b> sudah rusak <b>' + all.length + ' kali</b>. Ini kejadian <b>ke-' + kth + '</b>.<div class="rep-seq">' +
-      all.map(c => '<span class="rep-step' + (c === t.code ? ' me' : '') + '" title="' + (TN[String(c)[0].toUpperCase()] || '') + '">' + esc(c) + '</span>').join('<i>\u2192</i>') + '</div></div>' : '';
-    const hs = (t.hist || []).filter((h, n, arr) => n === 0 || h.type !== arr[n - 1].type);
-    if (hs.length > 1) repInfo += '<div class="rep-box warn">Kategori memburuk tanpa perbaikan: ' + hs.map(h => esc(h.type) + ' (V' + h.v + ')').join(' \u2192 ') + '</div>';
-    $('rsSide').innerHTML = '<div class="rs-side-head"><div><b>' + esc(t.code) + '</b><span>' + (t.src === 'dwg' ? 'Dari DWG V' + t.fileV : 'Pin manual') + (forma ? ' \u00b7 terhubung ke titik Forma' : '') + '</span></div><button type="button" class="v2-close" id="rsSideClose" aria-label="Tutup">&times;</button></div>' + repInfo +
-      '<label>Type<select id="rsSType"' + (forma || t.src === 'dwg' ? ' disabled' : '') + '>' + opt(['Ringan', 'Sedang', 'Berat'], t.type) + '</select></label>' +
-      '<label>Status<select id="rsSStatus"' + (forma ? ' disabled' : '') + '>' + opt(['Open', 'In progress', 'In review', 'Closed'], status) + '</select></label>' +
-      '<label>Luas (m\u00b2)<input id="rsSLuas" value="' + (t.luas ? String(Math.round(t.luas * 1000) / 1000).replace('.', ',') : '') + '"' + (t.src === 'dwg' ? ' disabled' : '') + ' inputmode="decimal" placeholder="isi kalau sudah diukur"></label>' +
-      '<label>No SPK<input id="rsSSpk" value="' + esc(forma ? (spk || '') : (t.noSpk || '')) + '"' + (forma ? ' disabled' : '') + ' inputmode="numeric" placeholder="diisi saat SPK terbit"></label>' +
-      '<label>Catatan<textarea id="rsSNote" rows="2">' + esc(t.note || '') + '</textarea></label>' +
-      '<div class="rs-side-meta">' + (t.lat ? 'GPS ' + t.lat.toFixed(6) + ', ' + t.lon.toFixed(6) + ' \u00b7 <a href="https://www.google.com/maps?q=' + t.lat + ',' + t.lon + '" target="_blank" rel="noopener">Maps</a>' : 'Koordinat gambar bukan UTM, GPS tidak tersedia') +
-      (spk && !forma ? '<br>Terhubung ke SPK ' + esc(spk) : '') + (forma ? '<br>Status & No SPK mengikuti data Forma.' : '') + (t.src === 'dwg' ? '<br>Luas & kategori dari gambar; ubah lewat DWG versi baru.' : '') + '</div>' +
-      '<div class="rs-side-foot">' + (t.src === 'pin' ? '<button type="button" class="btn-ghost btn-danger-text" id="rsSDel">Hapus pin</button>' : '<span></span>') + '<button type="button" class="upload-btn" id="rsSSave">Simpan</button></div>';
-    $('rsSide').hidden = false;
-    $('rsSideClose').onclick = () => { rs.sel = null; $('rsSide').hidden = true; rsRenderPins(); };
-    $('rsSSave').onclick = () => {
-      if (!forma) { t.status = $('rsSStatus').value; t.noSpk = normNo($('rsSSpk').value); }
-      if (t.src === 'pin') { t.type = $('rsSType').value; t.code = letterFix(t.code, t.type); const l = parseFloat(String($('rsSLuas').value).replace(/\./g, '').replace(',', '.')); t.luas = isNaN(l) ? 0 : l; }
-      t.note = $('rsSNote').value.trim();
-      aiSave(); injectAppIssues(); recomputeAllSafe(); rsRenderPins(); rsRenderHead(); pjToast(t.code + ' disimpan.');
-    };
-    const del = $('rsSDel');
-    if (del) del.onclick = () => { if (!window.confirm('Hapus pin ' + t.code + '?')) return; appIssues.list = appIssues.list.filter(x => x.id !== t.id); aiSave(); injectAppIssues(); recomputeAllSafe(); rs.sel = null; $('rsSide').hidden = true; rsRenderPins(); rsRenderHead(); };
-  }
 
   // ---------- tab Titik ----------
-  function rsRenderTitik() {
-    const rows = rsTitik();
-    const srcLabel = { forma: 'Forma', linked: 'Forma + DWG', dwg: 'DWG', pin: 'Pin manual' };
-    const cnt = {};
-    rows.forEach(r => { const b = baseOf(r.code); if (b != null) cnt[b] = (cnt[b] || 0) + 1; });
-    const seq = {};
-    rows.forEach(r => { const b = baseOf(r.code); if (b != null) (seq[b] = seq[b] || []).push(r.code); });
-    const ke = code => { const b = baseOf(code); if (b == null) return '\u2013'; const n = cnt[b] || 1, k = subOf(code);
-      const s = (seq[b] || []).slice().sort((x, y) => subOf(x) - subOf(y)).join(' \u2192 ');
-      return n > 1 ? '<span class="rep-chip' + (k > 1 ? ' on' : '') + '" title="Lokasi #' + b + ': ' + esc(s) + '">#' + b + ' \u00b7 ke-' + k + ' dari ' + n + '</span>' : '<span style="color:var(--ink-400);">#' + b + ' \u00b7 1&times;</span>'; };
-    $('rsTitikBody').innerHTML = rows.map(r => {
-      const g = r.g;
-      return '<tr' + (r.gone ? ' class="pj-archived"' : '') + '><td>' + esc(r.code) + '</td><td>' + ke(r.code) + '</td><td>' + esc(r.type) + '</td><td>' + esc(r.status) + '</td><td class="num">' + (r.luas ? num(r.luas, 3) : '\u2013') + '</td>' +
-        '<td><span class="src-tag' + (r.kind === 'forma' ? '' : ' forma') + '">' + srcLabel[r.kind] + '</span>' + (r.gone ? ' <span class="src-tag">tidak ada di V' + r.t.goneIn + '</span>' : '') + '</td>' +
-        '<td>' + (g && g.lat ? '<a href="https://www.google.com/maps?q=' + g.lat + ',' + g.lon + '" target="_blank" rel="noopener" style="font-size:12px;">' + g.lat.toFixed(5) + ', ' + g.lon.toFixed(5) + '</a>' : '\u2013') + '</td>' +
-        '<td>' + (r.spk ? '<span class="spk-chip">' + esc(r.spk) + '</span>' : '<span class="spk-none">Belum SPK</span>') + '</td>' +
-        '<td>' + (g && g.x != null && g.active !== false && !g.nextId ? '<button type="button" class="link-cell" data-goto-pin="' + esc(g.id) + '">Lihat di gambar</button>' : '') + '</td></tr>';
-    }).join('') || '<tr><td colspan="9" style="text-align:center; color:var(--ink-400); padding:26px 8px;">Belum ada titik kerusakan di ruas ini.</td></tr>';
-  }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-goto-pin]'); if (!b) return;
     const t = appIssues.list.find(x => x.id === b.dataset.gotoPin); if (!t) return;
@@ -7915,13 +7869,13 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     if (editable) {
       rep += '<div class="zn-box"><div class="zn-h"><b>Kerusakan berulang</b>' + (zi ? '<span class="zn-id">' + zi.zone.id + ' \u00b7 ' + zi.n + '\u00d7</span>' : '<span class="is-hint">belum termasuk zona</span>') + '</div>' +
         (zi ? '<div class="rep-seq">' + zi.zone.members.map(m => '<button type="button" class="rep-step' + (m.id === t.id ? ' me' : '') + '" data-zgo="' + esc(m.id) + '" title="' + esc(statusOfAi(m)) + (m.closedAt ? ' \u00b7 ditutup ' + fmtTgl(fromISO(m.closedAt)) : '') + '">' + esc(m.code) + ' \u00b7 V' + (m.firstV || m.fileV || '?') + '</button>').join('<i>\u2192</i>') + '</div>' : '') +
-        sug.map(x => '<div class="zn-sug"><span>Saran: <b>' + esc(x.o.code) + '</b> \u00b7 kotak bertumpuk ' + Math.round(x.r * 100) + '% \u00b7 ' + esc(statusOfAi(x.o)) + (x.o.zone ? ' \u00b7 zona ' + esc(x.o.zone) : '') + '</span>' +
+        sug.map(x => '<div class="zn-sug"><span>Saran: <b>' + esc(x.o.code) + '</b> \u00b7 ' + (x.r >= ZONE_RATIO ? 'kotak bertumpuk ' + Math.round(x.r * 100) + '%' : 'kode lama satu lokasi') + ' \u00b7 ' + esc(statusOfAi(x.o)) + (x.o.zone ? ' \u00b7 zona ' + esc(x.o.zone) : '') + '</span>' +
           '<button type="button" class="btn-ghost" data-zok="' + esc(x.o.id) + '">Setujui</button><button type="button" class="btn-ghost" data-zno="' + esc(x.o.id) + '">Bukan</button></div>').join('') +
         '<div class="zn-acts"><button type="button" class="btn-ghost" data-zadd="1">' + (zi ? '+ Tambah kerusakan ke zona ini' : '+ Tandai berulang dengan\u2026') + '</button>' + (zi ? '<button type="button" class="btn-ghost btn-danger-text" data-zleave="1">Lepas dari zona</button>' : '') + '</div></div>';
     }
     if (!editable && zi && zi.n > 1) rep = '<div class="rep-box">Zona <b>' + zi.zone.id + '</b> sudah rusak <b>' + zi.n + ' kali</b>, ini kejadian <b>ke-' + zi.k + '</b>.<div class="rep-seq">' +
       zi.zone.members.map(m => '<span class="rep-step' + (m.id === t.id ? ' me' : '') + '" title="' + esc(statusOfAi(m)) + (m.closedAt ? ' \u00b7 ditutup ' + fmtTgl(fromISO(m.closedAt)) : '') + '">' + esc(m.code) + ' \u00b7 V' + (m.firstV || m.fileV || '?') + '</span>').join('<i>\u2192</i>') + '</div></div>';
-    else if (!zi && all.length > 1) rep = '<div class="rep-box">Lokasi <b>#' + bb + '</b> sudah rusak <b>' + all.length + ' kali</b>, ini kejadian <b>ke-' + subOf(it.code) + '</b>.<div class="rep-seq">' +
+    else if (!editable && !zi && all.length > 1) rep = '<div class="rep-box">Lokasi <b>#' + bb + '</b> sudah rusak <b>' + all.length + ' kali</b>, ini kejadian <b>ke-' + subOf(it.code) + '</b>.<div class="rep-seq">' +
       all.map(c => '<span class="rep-step' + (c === it.code ? ' me' : '') + '">' + esc(c) + '</span>').join('<i>\u2192</i>') + '</div></div>';
     const hs = t ? (t.hist || []).filter((h, n, arr) => n === 0 || h.type !== arr[n - 1].type) : [];
     if (hs.length > 1) rep += '<div class="rep-box warn">Kategori memburuk tanpa perbaikan: ' + hs.map(h => esc(h.type) + ' (V' + h.v + ')').join(' \u2192 ') + '</div>';
