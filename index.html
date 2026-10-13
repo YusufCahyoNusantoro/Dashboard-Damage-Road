@@ -1086,6 +1086,13 @@
   .lf-txt { background: none; border: none; pointer-events: none; }
   .lf-txt span { display: inline-block; white-space: nowrap; transform-origin: 0 100%; color: #ef4444; font-family: Inter, Arial, sans-serif; font-weight: 600; line-height: 1;
     text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px rgba(255,255,255,.9); }
+  .ui-choices { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 6px; }
+  .ui-choices button { justify-content: flex-start; text-align: left; white-space: normal; line-height: 1.35; padding: 10px 14px; }
+  .lf-spt { background: none; border: none; pointer-events: none; }
+  .lf-spt b, .lf-spt span, .lf-spt em { display: block; white-space: nowrap; font-family: Inter, Arial, sans-serif; font-size: 11px; line-height: 1.15; font-style: normal;
+    text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px rgba(255,255,255,.9); }
+  .lf-spt b { color: #b91c1c; } .lf-spt span { color: #111827; } .lf-spt em { color: #dc2626; }
+
 </style>
 </head>
 <body>
@@ -4774,6 +4781,20 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   window.uiConfirm = (msg, opt) => open('confirm', msg, '', opt);
   window.uiPrompt = (msg, def, opt) => open('prompt', msg, def, opt);
   window.uiAlert = (msg, opt) => open('alert', msg, '', opt);
+  // pilihan beberapa tombol: options = [{ label, value, primary }] -> resolve(value) / null kalau batal
+  window.uiChoose = (msg, options) => new Promise(resolve => {
+    const wrap = document.createElement('div');
+    wrap.className = 'v2-modal ui-dialog';
+    wrap.innerHTML = '<div class="v2-modal-box" role="dialog" aria-modal="true" style="width:520px;"><p class="ui-msg">' + esc(msg).replace(/\n/g, '<br>') + '</p>' +
+      '<div class="ui-choices">' + options.map((o, i) => '<button type="button" class="' + (o.primary ? 'upload-btn' : 'btn-ghost') + '" data-uc="' + i + '">' + esc(o.label) + '</button>').join('') + '</div>' +
+      '<div class="v2-modal-foot"><button type="button" class="btn-ghost" data-uc="x">Batal</button></div></div>';
+    document.body.appendChild(wrap);
+    const done = v => { document.removeEventListener('keydown', key, true); wrap.remove(); resolve(v); };
+    const key = e => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); done(null); } };
+    document.addEventListener('keydown', key, true);
+    wrap.addEventListener('click', e => { const b = e.target.closest('[data-uc]'); if (b) done(b.dataset.uc === 'x' ? null : options[+b.dataset.uc].value); else if (e.target === wrap) done(null); });
+    setTimeout(() => { const f = wrap.querySelector('.upload-btn') || wrap.querySelector('[data-uc]'); if (f) f.focus(); }, 20);
+  });
 })();
 
 // ============================================================
@@ -6478,7 +6499,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   function applyDwgToIssues(ruas, fileId, v, geom, dateISO) {
     aiEnsure();
     const res = { baru: 0, cocokForma: 0, update: 0, hilang: 0, berulang: 0, berulangList: [], berubah: 0, berubahList: [] };
-    const cand = appIssues.list.filter(t => t.ruas === ruas && t.x != null);
+    const cand = appIssues.list.filter(t => t.ruas === ruas && t.x != null && t.fileId === fileId);   // hanya issue dari file gambar yang sama
     const used = new Set();
     const forma = (model ? model.issues : []).filter(i => i.ruas === ruas && !String(i.key).startsWith('id:app:'));
     const linkedKeys = new Set(appIssues.list.filter(t => t.linkedKey).map(t => t.linkedKey));
@@ -6537,7 +6558,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const tb = document.querySelector('#damageTable tbody'); if (!tb) return false;
     injecting = true;
     let changedAny = false;
-    const want = new Map(appIssues.list.filter(t => !t.linkedKey && t.active).map(t => [t.id, t]));
+    // semua issue ikut dihitung; issue yang bidangnya tidak ada lagi di DWG terbaru tetap terbuka sampai ditutup PMO
+    const want = new Map(appIssues.list.filter(t => !t.linkedKey).map(t => [t.id, t]));
     tb.querySelectorAll('tr[data-app-id]').forEach(tr => { if (!want.has(tr.dataset.appId)) { tr.remove(); changedAny = true; } });
     const badge = s => s === 'Closed' ? '<span class="badge success">Closed</span>' : s === 'Open' ? '<span class="badge warning">Open</span>'
       : s === 'In review' ? '<span class="badge" style="background:#f2e9fb; color:#7c3aed;">In review</span>' : '<span class="badge" style="background:#e8eefd; color:#1d4ed8;">In progress</span>';
@@ -6598,9 +6620,10 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('rsTitle').textContent = p.kode;
     $('rsSub').textContent = [p.jalan || 'Nama jalan belum diisi', p.no ? 'Kode ruas ' + p.no : '', p.area ? 'Area ' + p.area : '', p.hub].filter(Boolean).join(' \u00b7 ');
     const rows = rsTitik();
-    const belum = rows.filter(r => !r.spk && !r.gone).length;
-    $('rsStats').innerHTML = '<span><b>' + rows.filter(r => !r.gone).length + '</b> titik</span><span><b class="v-warn">' + belum + '</b> belum SPK</span><span><b>' + rs.files.length + '</b> file</span>';
-    $('rsTitikN').textContent = rows.filter(r => !r.gone).length;
+    const belum = rows.filter(r => !r.spk).length;
+    const nLatest = rows.filter(r => !r.gone).length;
+    $('rsStats').innerHTML = '<span title="' + nLatest + ' titik masih ada di gambar DWG terbaru"><b>' + rows.length + '</b> titik</span><span><b class="v-warn">' + belum + '</b> belum SPK</span><span><b>' + rs.files.length + '</b> file</span>';
+    $('rsTitikN').textContent = rows.length;
     document.title = p.kode + ' \u2014 Damage Road';
   }
   function rsSetTab(t) {
@@ -6657,6 +6680,31 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const files = Array.from(e.target.files || []); e.target.value = '';
     for (const file of files) await rsUploadOne(file);
   });
+  function normFileName(n) {
+    return String(n || '').toLowerCase().replace(/\.[a-z0-9]+$/i, '').replace(/\s*\(\d+\)\s*$/, '').replace(/[_\s.\-()]+/g, '');
+  }
+  // gabungkan file B ke file A: versi B menjadi versi lanjutan A (urut tanggal upload); issue ikut dipindah
+  async function rsMergeFiles(targetId, sourceId) {
+    const A = rs.files.find(f => f.id === targetId), B = rs.files.find(f => f.id === sourceId); if (!A || !B) return;
+    let next = A.versions[A.versions.length - 1].v;
+    const map = {};
+    B.versions.slice().sort((x, y) => String(x.date).localeCompare(String(y.date))).forEach(ver => { next++; map[ver.v] = next; A.versions.push(Object.assign({}, ver, { v: next, note: (ver.note ? ver.note + ' \u00b7 ' : '') + 'digabung dari "' + B.name + '" V' + ver.v })); });
+    aiEnsure();
+    appIssues.list.forEach(t => {
+      if (t.fileId !== B.id) return;
+      t.fileId = A.id;
+      ['fileV', 'firstV', 'goneIn'].forEach(k => { if (t[k] != null && map[t[k]]) t[k] = map[t[k]]; });
+      (t.hist || []).forEach(h => { if (map[h.v]) h.v = map[h.v]; });
+      isLog(t, 'File gambar digabung: sekarang versi V' + t.fileV + ' dari "' + A.name + '"');
+    });
+    aiSave();
+    await idbPut('files', A); await idbDel('files', B.id);
+    rs.files = rs.files.filter(f => f.id !== B.id);
+    if (rs.viewFile === B.id) { rs.viewFile = A.id; rs.viewV = null; }
+    rs.ovl = {};
+    injectAppIssues(); recomputeAllSafe(); rsRenderFiles(); rsRenderHead();
+    rsStatus('"' + B.name + '" digabung ke "' + A.name + '" sebagai V' + Object.values(map).join(', V') + '.', true);
+  }
   async function rsUploadOne(file) {
     let survey = null;
     if (/\.(csv|txt|pnezd|xyz)$/i.test(file.name)) { try { const s = parsePnezd(await file.text()); if (s.length >= 3) survey = s; } catch (e) { /* bukan PNEZD */ } }
@@ -6665,7 +6713,20 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       try { const X = await loadSheetJs(); const wb = X.read(await file.arrayBuffer(), { type: 'array' }); const s = parsePnezd(X.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]], { FS: '\t' })); if (s.length >= 3) survey = s; } catch (e) { /* bukan PNEZD */ }
     }
     const folder = /\.dwg$/i.test(file.name) ? 'Civil 3D' : survey ? 'Survey (PNEZD)' : rs.folder;
-    let rec = rs.files.find(f => f.folder === folder && f.name.toLowerCase() === file.name.toLowerCase());
+    // Versi berlanjut walau nama file sedikit berbeda (spasi, titik, huruf besar, "(1)" dari download, dll.)
+    const ext = n => (String(n).match(/\.([a-z0-9]+)$/i) || [, ''])[1].toLowerCase();
+    let rec = rs.files.find(f => f.folder === folder && f.name.toLowerCase() === file.name.toLowerCase())
+      || rs.files.find(f => f.folder === folder && ext(f.name) === ext(file.name) && normFileName(f.name) === normFileName(file.name));
+    if (!rec) {
+      const same = rs.files.filter(f => f.folder === folder && ext(f.name) === ext(file.name));
+      if (same.length) {
+        const pick = await uiChoose('"' + file.name + '" namanya berbeda dari file yang sudah ada di folder ' + folder + '.\nMau dijadikan versi lanjutan dari file yang sudah ada, atau disimpan sebagai file baru?',
+          same.sort((a, b) => b.versions.length - a.versions.length).map((f, i) => ({ label: 'Jadikan V' + (f.versions[f.versions.length - 1].v + 1) + ' dari "' + f.name + '"', value: f.id, primary: i === 0 }))
+            .concat([{ label: 'Simpan sebagai file baru (V1)', value: '__new' }]));
+        if (pick === null) { rsStatus('Upload ' + file.name + ' dibatalkan.', true); return; }
+        if (pick !== '__new') rec = rs.files.find(f => f.id === pick);
+      }
+    }
     const v = rec ? rec.versions[rec.versions.length - 1].v + 1 : 1;
     let note = '';
     if (rec) { note = (await uiPrompt('Catatan untuk versi V' + v + ' dari "' + file.name + '" (opsional):', '', { ok: 'Upload V' + v })); if (note === null) { rsStatus('Upload ' + file.name + ' dibatalkan.', true); return; } }
@@ -6753,6 +6814,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       openActMenu(fm, [
         isDwg ? { label: 'Buka gambar', fn: () => { rs.viewFile = f.id; rs.viewV = null; rsSetTab('viewer'); } } : { label: 'Lihat file', fn: () => openFileViewer(f.id) },
         isDwg ? { label: 'Tagging otomatis V' + cur.v, fn: () => autoTagVersion(f.id, cur.v) } : null,
+        rs.files.some(x => x.id !== f.id && x.folder === f.folder && (/\.[a-z0-9]+$/i.exec(x.name) || [''])[0].toLowerCase() === (/\.[a-z0-9]+$/i.exec(f.name) || [''])[0].toLowerCase()) ? { label: 'Gabungkan ke file lain (jadi versi lanjutan)', fn: async () => {
+          const others = rs.files.filter(x => x.id !== f.id && x.folder === f.folder && (/\.[a-z0-9]+$/i.exec(x.name) || [''])[0].toLowerCase() === (/\.[a-z0-9]+$/i.exec(f.name) || [''])[0].toLowerCase());
+          const pick = await uiChoose('Gabungkan "' + f.name + '" (' + f.versions.length + ' versi) ke file mana? Versinya akan menjadi versi lanjutan file tujuan, dan issue di dalamnya ikut pindah.',
+            others.map((x, i) => ({ label: 'Ke "' + x.name + '" \u2192 jadi V' + (x.versions[x.versions.length - 1].v + 1) + (f.versions.length > 1 ? '\u2013V' + (x.versions[x.versions.length - 1].v + f.versions.length) : ''), value: x.id, primary: i === 0 })));
+          if (pick) await rsMergeFiles(pick, f.id);
+        } } : null,
         !isDwg && f.versions.length > 1 ? { label: 'Bandingkan versi', fn: () => { openFileViewer(f.id); const p = f.versions[f.versions.length - 2].v; $('fvvB').value = p; $('fvvB').dispatchEvent(new Event('change')); } } : null,
         { label: 'Download (V' + cur.v + ')', fn: () => rsDownload(f.id, cur.v) },
         { label: 'Riwayat versi (' + f.versions.length + ')', fn: () => rsHistory(f.id) },
@@ -7053,6 +7120,22 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   }
   const ll = (x, y) => { const g = toGps(x, y); return g ? [g.lat, g.lon] : null; };
   // ukuran huruf label = tinggi teks di gambar (meter) x piksel-per-meter pada zoom saat ini
+  // titik survey (PNEZD) di mode peta: titik merah; nomor, elevasi, deskripsi muncul saat di-zoom dekat
+  function rsMapSurvey() {
+    if (!rs.lmap || !rs.lmap._loaded) return;
+    const L = window.L;
+    if (!rs.lsurv) rs.lsurv = L.layerGroup().addTo(rs.lmap);
+    rs.lsurv.clearLayers();
+    if (rs.showPts === false) return;
+    const z = rs.lmap.getZoom(), lab = z >= 20;
+    (rs.survey || []).forEach((q, i) => {
+      const at = ll(q.e, q.n); if (!at) return;
+      L.circleMarker(at, { radius: z >= 19 ? 4 : 3, color: '#fff', weight: 1.2, fillColor: '#dc2626', fillOpacity: 1 }).addTo(rs.lsurv)
+        .bindTooltip('Titik ' + esc(q.p) + (q.z != null ? ' \u00b7 elev ' + q.z.toFixed(3) : '') + (q.d ? ' \u00b7 ' + esc(q.d) : ''));
+      if (lab) L.marker(at, { interactive: false, keyboard: false, icon: L.divIcon({ className: 'lf-spt', iconSize: [0, 0], iconAnchor: [-6, 8],
+        html: '<b>' + esc(q.p) + '</b>' + (q.z != null ? '<span>' + q.z.toFixed(2) + '</span>' : '') + (q.d ? '<em>' + esc(q.d) + '</em>' : '') }) }).addTo(rs.lsurv);
+    });
+  }
   function rsMapTexts() {
     if (!rs.lmap || !rs.lmap._loaded) return;   // peta belum punya posisi (dipanggil lagi setelah fitBounds lewat 'zoomend')
     const L = window.L;
@@ -7085,7 +7168,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       rs.lbase = baseLayers(L); rs.lbase['Satelit'].addTo(rs.lmap);
       L.control.layers(rs.lbase, null, { position: 'topleft' }).addTo(rs.lmap);
       rs.ldwg = L.layerGroup().addTo(rs.lmap); rs.lpins = L.layerGroup().addTo(rs.lmap);
-      rs.lmap.on('zoomend', rsMapTexts);
+      rs.lmap.on('zoomend', () => { rsMapTexts(); rsMapSurvey(); });
     }
     setTimeout(() => { rs.lmap.invalidateSize(); rsMapRender(true); }, 60);
   }
@@ -7104,7 +7187,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     drawGeom(rs.geom, null, true);
     // label teks dari DWG (mis. angka luas 13.337) ikut tampil di peta, ukurannya mengikuti zoom
     rs.ltxtData = (rs.geom.texts || []).filter(t => Math.hypot(t.p[0] - cx, t.p[1] - cy) < R).map(t => ({ t: t, at: ll(t.p[0], t.p[1]) })).filter(x => x.at);
-    rsMapTexts();
+    rsMapTexts(); rsMapSurvey();
     const pinsOf = (v, faded, color) => rsIssuesOfVersion(rs.viewFile, v).forEach(t => {
       const p = ll(t.x, t.y); if (!p) return;
       const it = isItemFromApp(t);
@@ -7200,7 +7283,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
         (q.d ? '<text x="' + (x + 5 * k) + '" y="' + (y + 19 * k) + '" font-size="' + fs + '" class="sp-d">' + esc(q.d) + '</text>' : '');
       sp += '</g>';
     });
-    if (rs.geom && k < 0.3) (rs.geom.points || []).forEach(q => { if (inV(q.p[0], q.p[1])) sp += '<circle cx="' + SX(q.p[0]) + '" cy="' + SY(q.p[1]) + '" r="' + 2.5 * k + '" fill="#dc2626"/>'; });
+    if (show && rs.geom && k < 0.3) (rs.geom.points || []).forEach(q => { if (inV(q.p[0], q.p[1])) sp += '<circle cx="' + SX(q.p[0]) + '" cy="' + SY(q.p[1]) + '" r="' + 2.5 * k + '" fill="#dc2626"/>'; });
     $('rsPts').innerHTML = sp;
   }
   function rsRenderPins() {
@@ -7285,7 +7368,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('rsSideClose').onclick = () => { $('rsSide').hidden = true; };
     rsRenderPins();
   }
-  if ($('rsPtsToggle')) $('rsPtsToggle').addEventListener('click', () => { rs.showPts = rs.showPts === false; $('rsPtsToggle').textContent = (rs.showPts === false ? '\u25CB ' : '\u25CF ') + 'Titik survey (' + (rs.survey || []).length + ')'; rsRenderPins(); });
+  if ($('rsPtsToggle')) $('rsPtsToggle').addEventListener('click', () => { rs.showPts = rs.showPts === false; $('rsPtsToggle').textContent = (rs.showPts === false ? '\u25CB ' : '\u25CF ') + 'Titik survey (' + (rs.survey || []).length + ')'; rsRenderPins(); if (rs.mapMode) rsMapSurvey(); });
   function rsSetPinMode(on) {
     rs.pinMode = on; $('rsAddPin').setAttribute('aria-pressed', on ? 'true' : 'false'); $('rsAddPin').classList.toggle('on', on);
     $('rsHint').hidden = !on; $('rsCanvas').classList.toggle('pinning', on);
@@ -7472,7 +7555,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     if (!it.firstV) return it.kind === 'forma' ? '<span class="src-tag">Forma</span>' : '<span style="color:var(--ink-400);">\u2013</span>';
     const a = it.firstV, b = it.lastV || it.firstV;
     let s = '<span class="rs-vchip">V' + a + '</span>' + (b !== a ? '<span class="ver-dash">\u2013</span><span class="rs-vchip">V' + b + '</span>' : '');
-    if (it.gone) s += ' <span class="src-tag">hilang di V' + it.t.goneIn + '</span>';
+    if (it.gone) s += ' <span class="src-tag" title="Bidang kerusakan ini tidak ada lagi di gambar V' + it.t.goneIn + '. Issue tetap terbuka sampai dicek dan ditutup PMO.">tidak ada di V' + it.t.goneIn + '</span>';
     return s;
   }
   function isStatusDot(s) { return '<span class="st-dot" style="background:' + (STATUS_COL[s] || '#9ca3af') + '"></span>' + esc(s); }
@@ -7504,7 +7587,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const start = (isState.page - 1) * isState.per, rows = list.slice(start, start + isState.per);
     $('isBody').innerHTML = rows.map(it => {
       const b = baseOf(it.code), n = b != null ? cnt[b] : 0;
-      return '<tr class="is-row' + (isState.sel === it.id ? ' sel' : '') + (it.gone || it.superseded ? ' pj-archived' : '') + '" data-isid="' + esc(it.id) + '" tabindex="0">' +
+      return '<tr class="is-row' + (isState.sel === it.id ? ' sel' : '') + (it.superseded ? ' pj-archived' : '') + '" data-isid="' + esc(it.id) + '" tabindex="0">' +
         '<td class="is-id">' + (it.num ? '#' + it.num : '<span style="color:var(--ink-400);">F</span>') + '</td>' +
         '<td><b>' + esc(it.code) + '</b>' + (n > 1 ? ' <span class="rep-chip' + (subOf(it.code) > 1 ? ' on' : '') + '">ke-' + subOf(it.code) + '/' + n + '</span>' : '') + '</td>' +
         '<td>' + esc(it.title) + '</td><td class="is-st">' + isStatusDot(it.status) + '</td>' +
