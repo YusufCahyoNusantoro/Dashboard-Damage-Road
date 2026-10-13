@@ -1093,6 +1093,12 @@
     text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px rgba(255,255,255,.9); }
   .lf-spt b { color: #b91c1c; } .lf-spt span { color: #111827; } .lf-spt em { color: #dc2626; }
 
+  #rsZone text { font-family: Inter, Arial, sans-serif; font-weight: 800; paint-order: stroke; stroke: #fff; text-anchor: middle; pointer-events: none; }
+  #rsZone path { pointer-events: none; }
+  .btn-ghost.on-soft { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+  .lf-zone { background: none; border: none; pointer-events: none; }
+  .lf-zone span { display: inline-block; transform: translateX(-50%); white-space: nowrap; font: 800 12px Inter, Arial, sans-serif; text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px #fff; }
+
 </style>
 </head>
 <body>
@@ -2114,6 +2120,7 @@
             <button type="button" class="btn-ghost" id="rsFit" title="Tampilkan seluruh gambar">&#9974; Pas layar</button>
             <button type="button" class="btn-ghost" id="rsAddPin" aria-pressed="false">&#128205; Tambah pin</button>
             <button type="button" class="btn-ghost" id="rsNewIssue" title="Create issue di ruas ini">+ Create issue</button>
+ <button type="button" class="btn-ghost on-soft" id="rsZoneBtn" aria-pressed="true" title="Tampilkan zona (kotak bidang) yang rusak lebih dari sekali">&#9888; Zona berulang</button>
             <button type="button" class="btn-ghost" id="rsOvlBtn" title="Tumpuk versi lain di atas versi yang sedang dilihat">&#x29C9; Superimpose versi</button>
             <button type="button" class="btn-ghost" id="rsMapBtn" title="Tumpuk gambar DWG di atas peta">&#127758; Superimpose peta</button>
             <button type="button" class="btn-ghost" id="rsFull" aria-pressed="false" title="Layar penuh (F)">&#x26F6; Layar penuh</button>
@@ -2125,7 +2132,7 @@
           <div id="rsMap" class="rs-map" hidden></div>
           <div class="rs-mapctl" id="rsMapCtl" hidden><label>Transparansi gambar DWG <input type="range" id="rsMapOp" min="0.1" max="1" step="0.05" value="0.85"></label></div>
           <div class="ovl-legend" id="rsOvlLegend" hidden></div>
-          <svg id="rsSvg" xmlns="http://www.w3.org/2000/svg"><g id="rsOvl"></g><g id="rsDraw"></g><g id="rsDmg"></g><g id="rsTxt"></g><g id="rsVtx"></g><g id="rsPts"></g><g id="rsPins"></g></svg>
+          <svg id="rsSvg" xmlns="http://www.w3.org/2000/svg"><g id="rsOvl"></g><g id="rsDraw"></g><g id="rsDmg"></g><g id="rsZone"></g><g id="rsTxt"></g><g id="rsVtx"></g><g id="rsPts"></g><g id="rsPins"></g></svg>
           <div class="rs-empty" id="rsEmpty">Belum ada file DWG di ruas ini. Upload file DWG dari Civil 3D di tab <b>Files</b>.</div>
           <div class="rs-loading" id="rsLoading" hidden><span class="spin"></span><span id="rsLoadingText">Membaca DWG&hellip;</span></div>
           <div class="rs-hint" id="rsHint" hidden>Klik di gambar untuk menaruh pin kerusakan baru &middot; Esc untuk batal</div>
@@ -6289,7 +6296,8 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   // ---------- titik kerusakan milik aplikasi (dari DWG / pin) ----------
   let appIssues = null;
   function aiLoad() { try { const o = JSON.parse(localStorage.getItem(AI_KEY) || 'null'); if (o && Array.isArray(o.list)) return o; } catch (e) { /* abaikan */ } return { list: [], seq: {} }; }
-  function aiSave() { try { localStorage.setItem(AI_KEY, JSON.stringify(appIssues)); } catch (e) { /* abaikan */ } }
+  let aiVer = 0;
+  function aiSave() { aiVer++; try { localStorage.setItem(AI_KEY, JSON.stringify(appIssues)); } catch (e) { /* abaikan */ } }
   function aiEnsure() { if (!appIssues) appIssues = aiLoad(); }
   // Kode titik: HURUF = kategori saat itu (R ringan, S sedang, B berat), ANGKA = nomor lokasi titik di ruas,
   // .N = kejadian ke-N di lokasi yang sama. Contoh: R1 (V1) diperbaiki, lalu rusak lagi lebih parah -> S1.2.
@@ -6495,6 +6503,60 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     if (rs.tab === 'viewer') { rsDrawGeom(); } else if (rs.tab === 'issues') isRender();
     uiAlert('Tagging otomatis V' + v + ': ' + r.baru + ' issue baru' + (r.update + r.cocokForma ? ', ' + (r.update + r.cocokForma) + ' bidang sudah punya issue' : '') + '. Kode, title, status & type bisa diedit di tab Issues.');
   }
+
+  // ============================================================
+  // ZONA KERUSAKAN = kotak bidang kerusakan dari DWG.
+  // Dua bidang dianggap satu zona kalau bertumpuk >= 30% (dari luas bidang yang lebih kecil),
+  // dengan toleransi 0,5 m untuk pergeseran gambar antar survey. Kerusakan baru di zona yang
+  // kerusakan sebelumnya sudah Closed = kerusakan berulang (tanpa STA, tanpa kode .2/.3).
+  // ============================================================
+  const ZONE_RATIO = 0.3, ZONE_TOL = 0.5;
+  function polyBBox(p) { let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity; p.forEach(q => { if (q[0] < a) a = q[0]; if (q[0] > c) c = q[0]; if (q[1] < b) b = q[1]; if (q[1] > d) d = q[1]; }); return [a, b, c, d]; }
+  function distToPoly(pt, p) {
+    let md = Infinity;
+    for (let i = 0, k = p.length - 1; i < p.length; k = i++) {
+      const ax = p[k][0], ay = p[k][1], dx = p[i][0] - ax, dy = p[i][1] - ay;
+      let t = dx || dy ? ((pt[0] - ax) * dx + (pt[1] - ay) * dy) / (dx * dx + dy * dy) : 0; t = Math.max(0, Math.min(1, t));
+      const ex = ax + dx * t - pt[0], ey = ay + dy * t - pt[1], dd = ex * ex + ey * ey; if (dd < md) md = dd;
+    }
+    return Math.sqrt(md);
+  }
+  // bagian bidang terkecil yang jatuh di dalam bidang lainnya (0..1), dihitung dengan titik sampel
+  function polyOverlapRatio(a, b, tol) {
+    tol = tol == null ? ZONE_TOL : tol;
+    if (!a || !b || a.length < 3 || b.length < 3) return 0;
+    const A = polyBBox(a), B = polyBBox(b);
+    if (A[0] > B[2] + tol || B[0] > A[2] + tol || A[1] > B[3] + tol || B[1] > A[3] + tol) return 0;
+    const small = polyArea(a) <= polyArea(b) ? a : b, big = small === a ? b : a, S = polyBBox(small);
+    const step = Math.max(Math.sqrt(Math.max(polyArea(small), 0.01)) / 25, 0.03);
+    let tot = 0, hit = 0;
+    for (let x = S[0] + step / 2; x < S[2]; x += step) for (let y = S[1] + step / 2; y < S[3]; y += step) {
+      if (!inside([x, y], small)) continue; tot++;
+      if (inside([x, y], big) || distToPoly([x, y], big) <= tol) hit++;
+    }
+    return tot ? hit / tot : 0;
+  }
+  const zoneCache = {};
+  function zonesOf(ruas) {
+    aiEnsure();
+    const key = ruas + '|' + aiVer + '|' + appIssues.list.length;
+    if (zoneCache[ruas] && zoneCache[ruas].key === key) return zoneCache[ruas];
+    const list = appIssues.list.filter(t => t.ruas === ruas && t.poly && t.poly.length > 2)
+      .sort((a, b) => String(a.created || '').localeCompare(String(b.created || '')) || (a.num || 0) - (b.num || 0));
+    const par = list.map((_, i) => i), find = i => par[i] === i ? i : (par[i] = find(par[i]));
+    for (let i = 0; i < list.length; i++) for (let k = i + 1; k < list.length; k++) {
+      if (find(i) === find(k)) continue;
+      if (polyOverlapRatio(list[i].poly, list[k].poly) >= ZONE_RATIO) par[find(k)] = find(i);
+    }
+    const groups = {}; list.forEach((t, i) => { (groups[find(i)] = groups[find(i)] || []).push(t); });
+    const zones = Object.values(groups).sort((a, b) => String(a[0].created || '').localeCompare(String(b[0].created || '')) || (a[0].num || 0) - (b[0].num || 0))
+      .map((m, i) => ({ id: 'Z-' + String(i + 1).padStart(2, '0'), members: m, n: m.length }));
+    const byIssue = {};
+    zones.forEach(z => z.members.forEach((t, k) => { byIssue[t.id] = { zone: z, k: k + 1, n: z.n }; }));
+    return (zoneCache[ruas] = { key: key, zones: zones, byIssue: byIssue });
+  }
+  function zoneInfo(t) { return t && t.poly ? zonesOf(t.ruas).byIssue[t.id] || null : null; }
+  const ZONE_COL = n => n >= 3 ? '#dc2626' : n === 2 ? '#f97316' : null;
   // DWG versi baru -> titik kerusakan otomatis
   function applyDwgToIssues(ruas, fileId, v, geom, dateISO) {
     aiEnsure();
@@ -6504,7 +6566,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const forma = (model ? model.issues : []).filter(i => i.ruas === ruas && !String(i.key).startsWith('id:app:'));
     const linkedKeys = new Set(appIssues.list.filter(t => t.linkedKey).map(t => t.linkedKey));
     // "titik yang sama" = area baru bertumpuk dengan area lama (titik tengah di dalam area lain, atau jarak < 2 m)
-    const overlaps = (t, d) => (t.poly && t.poly.length > 2 && (inside(d.at, t.poly) || inside([t.x, t.y], d.pts))) || Math.hypot(t.x - d.at[0], t.y - d.at[1]) < 2;
+    // "bidang yang sama" = kotak bidang bertumpuk >= 30% (toleransi 0,5 m); pin tanpa bidang: jarak < 2 m
+    const overlaps = (t, d) => t.poly && t.poly.length > 2 ? polyOverlapRatio(t.poly, d.pts) >= ZONE_RATIO : Math.hypot(t.x - d.at[0], t.y - d.at[1]) < 2;
+    const ruasPolys = appIssues.list.filter(t => t.ruas === ruas && t.poly && t.poly.length > 2);
     const newest = list => list.sort((a, b) => (b.fileV || 0) - (a.fileV || 0) || String(b.created || '').localeCompare(String(a.created || '')))[0];
     geom.dmg.forEach(d => {
       const gps = toGps(d.at[0], d.at[1]);
@@ -6529,13 +6593,13 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const base = { id: 'ai' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ruas: ruas, src: 'dwg', fileId: fileId, fileV: v, firstV: v, active: true,
         type: d.kat, dwgKat: d.kat, luas: 0, areaDwg: d.area, x: d.at[0], y: d.at[1], poly: d.pts, lat: gps && gps.lat, lon: gps && gps.lon, created: dateISO, start: dateISO, noSpk: '', note: '', centered: 1,
         num: isNextNum(ruas), title: d.kat, log: [{ at: new Date().toISOString(), text: 'Tagging otomatis dari DWG V' + v + ' (bidang ' + d.kat.toLowerCase() + ')' }] };
-      const prev = newest(hits.slice());
-      if (prev && baseOf(prev.code) != null) {
-        // titik ini pernah rusak & sudah diperbaiki -> kerusakan berulang di titik yang sama
+      // zona ini pernah rusak & kerusakan sebelumnya sudah diperbaiki (Closed) -> kerusakan berulang di zona yang sama
+      const prev = newest(ruasPolys.filter(t => !used.has(t.id) && statusOfAi(t) === 'Closed' && polyOverlapRatio(t.poly, d.pts) >= ZONE_RATIO));
+      if (prev) {
         prev.nextId = base.id;
-        const code = nextRepeatCode(ruas, baseOf(prev.code), d.kat);
-        base.log.push({ at: new Date().toISOString(), text: 'Kerusakan berulang di lokasi ' + prev.code + ' (sebelumnya ' + statusOfAi(prev) + ')' });
-        isLog(prev, 'Rusak lagi di DWG V' + v + ' \u2192 ' + code);
+        const code = nextBaseCode(ruas, d.kat);
+        base.log.push({ at: new Date().toISOString(), text: 'Kerusakan berulang di zona yang sama dengan ' + prev.code + ' (sudah diperbaiki)' });
+        isLog(prev, 'Zona ini rusak lagi di DWG V' + v + ' \u2192 ' + code);
         appIssues.list.push(Object.assign(base, { code: code, status: 'Open', parentId: prev.id, repeat: true }));
         cand.push(base); used.add(base.id); res.berulang++; res.berulangList.push(code); res.baru++;
         return;
@@ -6569,7 +6633,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const sig = [t.code, t.type, t.status, luasV, spkV, t.lat, t.rootCause, t.start, t.due, t.assignee, compV, t.closedAt].join('|');
       let tr = tb.querySelector('tr[data-app-id="' + t.id + '"]');
       if (tr && tr.dataset.sig === sig) return;
-      const rep = /\.\d+$/.test(String(t.code || ''));
+      const zi = zoneInfo(t); const rep = (zi && zi.k > 1) || /\.\d+$/.test(String(t.code || ''));
       const html = '<td>' + esc(t.code) + '</td><td>' + esc(t.ruas) + '</td><td>' + esc(t.type) + '</td><td>' + esc(t.rootCause || (rep ? 'Kerusakan Berulang di Titik yang Sama' : t.src === 'dwg' ? 'Dari gambar DWG' : 'Input manual')) + '</td><td>' + badge(t.status) + '</td>' +
         '<td>' + fmtTgl(fromISO(t.start || t.created)) + '</td><td>' + (t.due ? fmtTgl(fromISO(t.due)) : '\u2013') + '</td><td>' + (t.status === 'Closed' && t.closedAt ? fmtTgl(fromISO(t.closedAt)) : '\u2013') + '</td><td class="num">' + num(luasV || 0, 3) + '</td><td>' + esc(t.assignee || '\u2013') + '</td><td>' + esc(compV || '\u2013') + '</td>' +
         '<td>' + (t.lat ? '<a href="https://www.google.com/maps?q=' + t.lat + ',' + t.lon + '" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:underline; font-size:12px; white-space:nowrap;">Lihat Titik Issue</a>' : '\u2013') + '</td>';
@@ -6975,6 +7039,18 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     return isFinite(a) ? [a - 5, b - 5, c + 5, d + 5] : null;
   }
   if ($('rsViewFile')) $('rsViewFile').addEventListener('change', e => { const [id, v] = e.target.value.split('|'); rs.viewFile = id; rs.viewV = parseInt(v, 10); rsOpenViewer(); });
+  // zona yang sudah rusak >= 2 kali: semua kotak bidangnya digaris tebal putus-putus (oranye 2x, merah 3x+) + label
+  function rsDrawZones() {
+    const el = $('rsZone'); if (!el) return;
+    if (rs.showZone === false) { el.innerHTML = ''; return; }
+    const r2 = n => Math.round(n * 1000) / 1000;
+    const path = pts => 'M' + pts.map(p => r2(SX(p[0])) + ' ' + r2(SY(p[1]))).join('L') + 'Z';
+    el.innerHTML = zonesOf(rs.ruas).zones.filter(z => z.n > 1).map(z => {
+      const col = ZONE_COL(z.n), last = z.members[z.members.length - 1], c = polyCenter(last.poly);
+      return '<g class="zone"><path d="' + z.members.map(m => path(m.poly)).join(' ') + '" fill="' + col + '" fill-opacity=".08" stroke="' + col + '" stroke-width="2.5" stroke-dasharray="7 4" vector-effect="non-scaling-stroke"/>' +
+        '<text class="zone-lbl" data-zx="' + r2(SX(c[0])) + '" data-zy="' + r2(SY(c[1])) + '" fill="' + col + '">' + z.id + ' \u00b7 ' + z.n + '\u00d7</text></g>';
+    }).join('');
+  }
   function rsDrawGeom() {
     const g = rs.geom;
     const r2 = n => Math.round(n * 1000) / 1000;
@@ -6982,7 +7058,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('rsDraw').innerHTML = '<path d="' + g.lines.map(path).join(' ') + '" fill="none" stroke="#3a4150" stroke-width="1" vector-effect="non-scaling-stroke"/>';
     $('rsDmg').innerHTML = g.dmg.map((d, di) => '<path data-di="' + di + '" d="' + path(d.pts) + 'Z" fill="' + TYPE_COL[d.kat] + '" fill-opacity=".85" stroke="#b91c1c" stroke-width=".8" vector-effect="non-scaling-stroke"/>').join('');
     const hs = (g.texts || []).map(t => t.h).sort((a, b) => a - b); rs.txtH = hs.length ? hs[Math.floor(hs.length / 2)] : 0;
-    rsDrawOverlays();
+    rsDrawOverlays(); rsDrawZones();
     $('rsTxt').innerHTML = (g.texts || []).map(t => { const x = r2(SX(t.p[0])), y = r2(SY(t.p[1])); return '<text x="' + x + '" y="' + y + '" font-size="' + t.h + '"' + (t.r ? ' transform="rotate(' + (-t.r * 180 / Math.PI) + ' ' + x + ' ' + y + ')"' : '') + '>' + esc(t.t) + '</text>'; }).join('');
     rsRenderPins();
   }
@@ -7185,6 +7261,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     };
     rsOvlKeys().forEach(k => { if (rs.ovl[k].g) drawGeom(rs.ovl[k].g, rs.ovl[k].color, false); });
     drawGeom(rs.geom, null, true);
+    if (rs.showZone !== false) zonesOf(rs.ruas).zones.filter(z => z.n > 1).forEach(z => {
+      const col = ZONE_COL(z.n);
+      z.members.forEach(m => { const poly = m.poly.map(p => ll(p[0], p[1])).filter(Boolean); if (poly.length > 2) L.polygon(poly, { color: col, weight: 2.5, dashArray: '7 4', fillColor: col, fillOpacity: 0.08, interactive: false }).addTo(rs.ldwg); });
+      const c = polyCenter(z.members[z.members.length - 1].poly), at = ll(c[0], c[1]);
+      if (at) L.marker(at, { interactive: false, keyboard: false, icon: L.divIcon({ className: 'lf-zone', iconSize: [0, 0], iconAnchor: [0, -14], html: '<span style="color:' + col + '">' + z.id + ' \u00b7 ' + z.n + '\u00d7</span>' }) }).addTo(rs.ldwg);
+    });
     // label teks dari DWG (mis. angka luas 13.337) ikut tampil di peta, ukurannya mengikuti zoom
     rs.ltxtData = (rs.geom.texts || []).filter(t => Math.hypot(t.p[0] - cx, t.p[1] - cy) < R).map(t => ({ t: t, at: ll(t.p[0], t.p[1]) })).filter(x => x.at);
     rsMapTexts(); rsMapSurvey();
@@ -7242,6 +7324,10 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     if (e.key === 'Escape' && rsIsFull() && !rs.pinMode) rsSetFull(false);
   });
   if ($('rsNewIssue')) $('rsNewIssue').addEventListener('click', () => isOpenForm(null));
+  if ($('rsZoneBtn')) $('rsZoneBtn').addEventListener('click', () => {
+    rs.showZone = rs.showZone === false; const b = $('rsZoneBtn'); b.setAttribute('aria-pressed', rs.showZone !== false ? 'true' : 'false'); b.classList.toggle('on-soft', rs.showZone !== false);
+    rsDrawZones(); rsRenderPins(); if (rs.mapMode) rsMapRender(false);
+  });
   if ($('rsOvlBtn')) $('rsOvlBtn').addEventListener('click', e => { e.stopPropagation(); if (!actMenu.hidden && actAnchor === e.currentTarget) { closeActMenu(); return; } rsOvlMenu(e.currentTarget); });
   if ($('rsMapBtn')) $('rsMapBtn').addEventListener('click', () => rsSetMapMode(!rs.mapMode));
   if ($('rsMapOp')) $('rsMapOp').addEventListener('input', () => rsMapRender(false));
@@ -7292,6 +7378,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const r = svg.getBoundingClientRect(); const k = rs.view.w / Math.max(1, r.width);
     rsRenderOverlays(k);
     const R = 14 * k;
+    document.querySelectorAll('#rsZone .zone-lbl').forEach(el => { el.setAttribute('x', el.dataset.zx); el.setAttribute('y', +el.dataset.zy + 20 * k); el.setAttribute('font-size', 12.5 * k); el.setAttribute('stroke-width', 3 * k); });
     // pin dari versi yang di-superimpose: kecil & transparan, warna versinya
     const ovlPins = rsOvlKeys().map(kk => { const v = +kk.split('|')[1], col = rs.ovl[kk].color; return rsIssuesOfVersion(rs.viewFile, v).map(t => {
       const r = R * 0.7, cx = SX(t.x), cy = SY(t.y) - r * 1.6;
@@ -7586,10 +7673,11 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const pages = Math.max(1, Math.ceil(list.length / isState.per)); isState.page = Math.min(isState.page, pages);
     const start = (isState.page - 1) * isState.per, rows = list.slice(start, start + isState.per);
     $('isBody').innerHTML = rows.map(it => {
-      const b = baseOf(it.code), n = b != null ? cnt[b] : 0;
+      const b = baseOf(it.code), n = b != null ? cnt[b] : 0, zi = it.t ? zoneInfo(it.t) : null;
       return '<tr class="is-row' + (isState.sel === it.id ? ' sel' : '') + (it.superseded ? ' pj-archived' : '') + '" data-isid="' + esc(it.id) + '" tabindex="0">' +
         '<td class="is-id">' + (it.num ? '#' + it.num : '<span style="color:var(--ink-400);">F</span>') + '</td>' +
-        '<td><b>' + esc(it.code) + '</b>' + (n > 1 ? ' <span class="rep-chip' + (subOf(it.code) > 1 ? ' on' : '') + '">ke-' + subOf(it.code) + '/' + n + '</span>' : '') + '</td>' +
+        '<td><b>' + esc(it.code) + '</b>' + (zi && zi.n > 1 ? ' <span class="rep-chip' + (zi.k > 1 ? ' on' : '') + '" title="Zona ' + zi.zone.id + ': rusak ' + zi.n + '\u00d7 di kotak bidang yang sama">' + zi.zone.id + ' \u00b7 ke-' + zi.k + '/' + zi.n + '</span>'
+          : (!zi && n > 1 ? ' <span class="rep-chip' + (subOf(it.code) > 1 ? ' on' : '') + '">ke-' + subOf(it.code) + '/' + n + '</span>' : '')) + '</td>' +
         '<td>' + esc(it.title) + '</td><td class="is-st">' + isStatusDot(it.status) + '</td>' +
         '<td>' + (it.spk ? '<span class="spk-chip">' + esc(it.spk) + '</span>' : '<span class="spk-none">Belum SPK</span>') + '</td><td class="is-ty">' + isTypeBadge(it.type) + '</td>' +
         '<td class="num">' + (it.luas ? num(it.luas, 3) : '<span class="ext-wait" title="Otomatis dari API eksternal">menunggu</span>') + '</td><td>' + esc(it.assignee || '\u2013') + '</td><td>' + esc(it.company || '\u2013') + '</td>' +
@@ -7726,7 +7814,10 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const tab = el.dataset.tab || 'details';
     const bb = baseOf(it.code), all = bb != null ? ruasCodes(rs.ruas).filter(c => baseOf(c) === bb).sort((a, b) => subOf(a) - subOf(b)) : [];
     let rep = '';
-    if (all.length > 1) rep = '<div class="rep-box">Lokasi <b>#' + bb + '</b> sudah rusak <b>' + all.length + ' kali</b>, ini kejadian <b>ke-' + subOf(it.code) + '</b>.<div class="rep-seq">' +
+    const zi = t ? zoneInfo(t) : null;
+    if (zi && zi.n > 1) rep = '<div class="rep-box">Zona <b>' + zi.zone.id + '</b> (kotak bidang yang sama) sudah rusak <b>' + zi.n + ' kali</b>, ini kejadian <b>ke-' + zi.k + '</b>.<div class="rep-seq">' +
+      zi.zone.members.map(m => '<span class="rep-step' + (m.id === t.id ? ' me' : '') + '" title="' + esc(statusOfAi(m)) + (m.closedAt ? ' \u00b7 ditutup ' + fmtTgl(fromISO(m.closedAt)) : '') + '">' + esc(m.code) + ' \u00b7 V' + (m.firstV || m.fileV || '?') + '</span>').join('<i>\u2192</i>') + '</div></div>';
+    else if (!zi && all.length > 1) rep = '<div class="rep-box">Lokasi <b>#' + bb + '</b> sudah rusak <b>' + all.length + ' kali</b>, ini kejadian <b>ke-' + subOf(it.code) + '</b>.<div class="rep-seq">' +
       all.map(c => '<span class="rep-step' + (c === it.code ? ' me' : '') + '">' + esc(c) + '</span>').join('<i>\u2192</i>') + '</div></div>';
     const hs = t ? (t.hist || []).filter((h, n, arr) => n === 0 || h.type !== arr[n - 1].type) : [];
     if (hs.length > 1) rep += '<div class="rep-box warn">Kategori memburuk tanpa perbaikan: ' + hs.map(h => esc(h.type) + ' (V' + h.v + ')').join(' \u2192 ') + '</div>';
