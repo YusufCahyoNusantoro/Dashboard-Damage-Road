@@ -1116,6 +1116,47 @@
   .zp-row em { font-style: normal; font-size: 11.5px; color: #c2410c; font-weight: 600; }
   .rs-pin-ovl { cursor: pointer; }
 
+  /* ---------- login & pengguna ---------- */
+  #authOverlay { position: fixed; inset: 0; z-index: 300; background: linear-gradient(135deg, #e8eefd, #f4f6fb 55%, #fdf3e6); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  #authOverlay[hidden] { display: none; }
+  body.dr-locked { overflow: hidden; }
+  .au-card { width: min(400px, 100%); background: #fff; border-radius: 18px; box-shadow: 0 20px 50px rgba(16,24,42,.14); padding: 28px 28px 18px; }
+  .au-brand img { height: 52px; width: auto; display: block; margin-bottom: 12px; }
+  .au-card h2 { margin: 0; font-size: 21px; }
+  .au-sub { margin: 4px 0 16px; font-size: 13px; color: var(--ink-500); line-height: 1.5; }
+  #auForm label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--ink-700); margin-bottom: 12px; }
+  #auForm input { font-family: inherit; font-size: 15px; border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px 12px; }
+  #auForm input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+  .au-btn { width: 100%; justify-content: center; padding: 11px; font-size: 14px; margin-top: 4px; }
+  .au-err { color: var(--danger); font-size: 13px; min-height: 18px; margin: 10px 0 0; }
+  .au-foot { font-size: 11.5px; color: var(--ink-400); margin: 14px 0 0; border-top: 1px solid var(--line); padding-top: 10px; overflow-wrap: anywhere; }
+  .sb-user { margin: 14px 4px 6px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 12.5px; }
+  .sb-user[hidden] { display: none; }
+  .sb-u-who { display: flex; gap: 10px; align-items: center; }
+  .sb-u-av { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex: 0 0 auto; }
+  .sb-u-who b { display: block; font-size: 13px; } .sb-u-who small { display: block; color: var(--ink-500); font-size: 11px; }
+  .sb-u-acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .um-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  .um-table th { text-align: left; font-size: 11.5px; color: var(--ink-500); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--line); }
+  .um-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .um-table small { color: var(--ink-500); }
+  .um-role { display: inline-block; font-size: 11px; background: var(--bg-sunken); border-radius: 999px; padding: 2px 8px; margin: 1px 0; }
+  .um-st { font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 2px 8px; }
+  .um-st.ok { background: #dcfce7; color: #166534; } .um-st.warn { background: #fef3c7; color: #92400e; } .um-st.off { background: #f1f5f9; color: #64748b; }
+  .um-form { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-top: 10px; background: var(--bg-sunken); }
+  .um-form h4 { margin: 0 0 8px; font-size: 14px; }
+  .um-lbl { font-size: 12px; font-weight: 600; color: var(--ink-700); }
+  .um-roles { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; margin-top: 6px; }
+  .um-rc { display: flex; gap: 8px; align-items: flex-start; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; cursor: pointer; font-weight: 400 !important; }
+  .um-rc b { display: block; font-size: 12.5px; } .um-rc small { display: block; font-size: 11px; color: var(--ink-500); }
+  /* tombol yang disembunyikan sesuai hak akses (np = tidak punya hak) */
+  .np-issue_create #isCreate, .np-issue_create #rsNewIssue, .np-issue_create #rsAddPin,
+  .np-file_upload label:has(> #rsUpload), .np-file_upload #rsAutoTag, .np-file_upload label:has(> #rsAutoTag),
+  .np-ruas_manage #pjCreateBtn, .np-settings_manage #isSettingsBtn,
+  .np-spk_manage label:has(> #dsSapInput), .np-integration_manage #igOpenBtn,
+  .np-backup_manage #bkOpenBtn, .np-backup_manage #demoOpenBtn, .np-backup_manage #sidebarUploadLink,
+  .np-user_manage #sbUsers { display: none !important; }
+
 </style>
 </head>
 <body>
@@ -4803,6 +4844,9 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     });
   }
   window.uiConfirm = (msg, opt) => open('confirm', msg, '', opt);
+  // Hak akses: kalau mode server (login) tidak aktif, semua boleh (seperti sebelumnya).
+  window.drCan = perm => { const u = window.__drUser; return !u || !perm || (u.perms || []).includes(perm); };
+  window.drGuard = (perm, what) => { if (window.drCan(perm)) return true; open('alert', 'Kamu tidak punya hak akses untuk ' + (what || 'aksi ini') + '. Hubungi PMO / admin kalau perlu akses.', '', {}); return false; };
   window.uiPrompt = (msg, def, opt) => open('prompt', msg, def, opt);
   window.uiAlert = (msg, opt) => open('alert', msg, '', opt);
   // pilihan beberapa tombol: options = [{ label, value, primary }] -> resolve(value) / null kalau batal
@@ -5878,6 +5922,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
 
   // ---------- import Rekap SPK (Excel SAP) ----------
   if ($('dsSapInput')) $('dsSapInput').addEventListener('change', async e => {
+    if (!window.drGuard('spk.manage', 'import data SPK')) { e.target.value = ''; return; }
     const file = e.target.files[0]; e.target.value = '';
     if (!file) return;
     status('Membaca ' + file.name + '\u2026', true);
@@ -6094,6 +6139,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   const pjModal = $('pjFormModal');
   let pjEditing = null;
   function pjOpenForm(id) {
+    if (!window.drGuard('ruas.manage', id ? 'mengedit ruas' : 'membuat ruas')) return;
     pjEnsure();
     const p = id ? projects.list.find(x => x.id === id) : null;
     pjEditing = p ? p.id : null;
@@ -6140,6 +6186,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     renderProjects(); pjToast(msg);
   });
   pjModal.addEventListener('click', e => { if (e.target === pjModal || e.target.closest('[data-close]')) pjModal.hidden = true; });
+  window.pjToast = (...a) => pjToast(...a);
   function pjToast(msg) {
     let t = $('pjToast');
     if (!t) { t = document.createElement('div'); t.id = 'pjToast'; t.className = 'pj-toast'; document.body.appendChild(t); }
@@ -6173,6 +6220,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       if (act.dataset.act === 'detail') openRuas(p.kode);
       if (act.dataset.act === 'edit') pjOpenForm(p.id);
       if (act.dataset.act === 'spk') pjGoSpk(p.kode);
+      if (act.dataset.act === 'arsip' && !window.drGuard('ruas.manage', 'mengarsipkan ruas')) return;
       if (act.dataset.act === 'arsip') {
         const to = p.status === 'arsip' ? 'aktif' : 'arsip';
         if (to === 'arsip') { uiConfirm('Arsipkan ' + p.kode + '? Ruas ini dipindah ke tab Arsip (tidak tampil di daftar ruas aktif). Data titik & file-nya tidak dihapus, dan bisa diaktifkan lagi kapan saja.', { ok: 'Arsipkan' }).then(ok => { if (ok) { p.status = to; p.archivedAt = toISO(new Date()); pjSave(); pjSyncRuasList(); renderProjects(); pjToast(p.kode + ' diarsipkan.'); } }); return; }
@@ -6197,6 +6245,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('pjStatus').value = tb.dataset.pjtab; pjState.page = 1; renderProjects();
   });
   async function pjDeletePermanent(p) {
+    if (!window.drGuard('ruas.manage', 'menghapus ruas')) return;
     aiEnsure();
     const own = appIssues.list.filter(t => t.ruas === p.kode);
     let files = [];
@@ -6588,6 +6637,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   }
   // gabungkan beberapa issue ke satu zona (zona yang sudah ada dipakai; kalau ada beberapa, digabung ke yang paling awal)
   function zoneJoin(ids, ruas) {
+    if (!window.drGuard('zone.manage', 'menandai zona berulang')) return null;
     const ts = ids.map(id => appIssues.list.find(x => x.id === id)).filter(Boolean); if (ts.length < 2) return null;
     const existing = Array.from(new Set(ts.map(t => t.zone).filter(Boolean))).sort(natural);
     const target = existing[0] || zoneNextId(ruas);
@@ -6597,12 +6647,14 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     return target;
   }
   function zoneLeave(t) {
+    if (!window.drGuard('zone.manage', 'mengubah zona berulang')) return;
     const z = t.zone; if (!z) return; delete t.zone; isLog(t, 'Dilepas dari zona ' + z);
     const left = appIssues.list.filter(x => x.ruas === t.ruas && x.zone === z);
     if (left.length === 1) { delete left[0].zone; isLog(left[0], 'Zona ' + z + ' dihapus (tinggal satu kerusakan)'); }
     aiSave(); injectAppIssues(); recomputeAllSafe();
   }
   function zoneReject(t, o) {
+    if (!window.drGuard('zone.manage', 'menolak saran zona')) return;
     t.zoneNo = Array.from(new Set((t.zoneNo || []).concat([o.id]))); o.zoneNo = Array.from(new Set((o.zoneNo || []).concat([t.id])));
     isLog(t, 'Saran berulang dengan ' + o.code + ' ditolak'); aiSave();
   }
@@ -6827,6 +6879,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   function rsStatus(msg, ok) { const el = $('rsStatus'); el.className = 'ds-status ' + (ok ? 'ok' : 'err'); el.textContent = msg; clearTimeout(rsStatus._t); if (ok !== null) rsStatus._t = setTimeout(() => { el.textContent = ''; }, 12000); }
   if ($('rsUpload')) $('rsUpload').addEventListener('change', async e => {
     const files = Array.from(e.target.files || []); e.target.value = '';
+    if (!window.drGuard('file.upload', 'upload file')) return;
     for (const file of files) await rsUploadOne(file);
   });
   function normFileName(n) {
@@ -6997,6 +7050,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
 
   // ---------- hapus file / versi ----------
   async function rsDeleteFile(fileId) {
+    if (!window.drGuard('file.delete', 'menghapus file')) return;
     const f = rs.files.find(x => x.id === fileId); if (!f) return;
     aiEnsure();
     const own = appIssues.list.filter(t => t.fileId === f.id);
@@ -7021,6 +7075,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     rsStatus('"' + f.name + '" dihapus' + (created ? ', bersama ' + created + ' titik kerusakan dari file ini' : '') + '.', true);
   }
   async function rsDeleteVersion(fileId, v) {
+    if (!window.drGuard('file.delete', 'menghapus versi file')) return;
     const f = rs.files.find(x => x.id === fileId); if (!f) return;
     const ver = f.versions.find(x => x.v === v); if (!ver) return;
     if (!(await uiConfirm('Hapus versi V' + v + ' dari "' + f.name + '"?\nVersi lain tetap tersimpan. Tindakan ini tidak bisa dibatalkan.', { danger: true, ok: 'Hapus versi' }))) return;
@@ -7637,7 +7692,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   function isTypeCat(name) { const c = isSettings().types.find(x => x.subs.some(s => s.name === name)); return c ? c.cat : 'Kerusakan Jalan'; }
 
   // ---------- data issue ----------
-  function isLog(t, text) { t.log = t.log || []; t.log.push({ at: new Date().toISOString(), text: text }); }
+  function isLog(t, text) { t.log = t.log || []; const u = window.__drUser; t.log.push(Object.assign({ at: new Date().toISOString(), text: text }, u ? { by: u.nama } : {})); }
   function isNextNum(ruas) { aiEnsure(); let m = 0; appIssues.list.forEach(t => { if (t.ruas === ruas && t.num > m) m = t.num; }); return m + 1; }
   function isMigrate() {
     aiEnsure();
@@ -7806,6 +7861,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     setTimeout(() => { if (rs.view) { const w = 40; rs.view = { x: SX(t.x) - w / 2, y: SY(t.y) - w / 2, w: w, h: w }; rsApplyView(); } rsSelect(t.id); }, 400);
   }
   async function isDelete(id) {
+    if (!window.drGuard('issue.delete', 'menghapus issue')) return;
     const t = appIssues.list.find(x => x.id === id); if (!t) return;
     if (!await uiConfirm('Hapus issue #' + t.num + ' (' + t.code + ')?' + (t.src === 'dwg' ? '\n\nIssue ini dibuat dari area di DWG. Kalau area itu masih ada di DWG yang di-upload berikutnya, issue akan dibuat lagi.' : '') + '\n\nTindakan ini tidak bisa dibatalkan.', { danger: true, ok: 'Hapus issue' })) return;
     appIssues.list.forEach(x => { if (x.nextId === id) delete x.nextId; });
@@ -7887,7 +7943,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const gps = t && t.lat ? '<div>' + t.lat.toFixed(6) + ', ' + t.lon.toFixed(6) + ' \u00b7 <a href="https://www.google.com/maps?q=' + t.lat + ',' + t.lon + '" target="_blank" rel="noopener">Buka Maps</a></div>' +
       '<div class="is-map" data-maplat="' + t.lat + '" data-maplon="' + t.lon + '"></div>' : '<span style="color:var(--ink-400);">\u2013</span>';
     const att = t && t.attachments && t.attachments.length ? '<div class="is-att">' + t.attachments.map(a => '<button type="button" class="is-attf" data-att="' + esc(a.id) + '" title="' + esc(a.name) + '">' + (/^image\//.test(a.type) ? '<img data-attimg="' + esc(a.id) + '" alt="">' : '<span>' + esc((a.name.split('.').pop() || '').toUpperCase()) + '</span>') + '<em>' + esc(a.name) + '</em></button>').join('') + '</div>' : '<span style="color:var(--ink-400);">Belum ada lampiran</span>';
-    const log = ((t && t.log) || []).slice().reverse().map(l => '<li><span>' + fmtWaktu(l.at) + '</span>' + esc(l.text) + '</li>').join('') || '<li><span></span>Belum ada aktivitas tercatat.</li>';
+    const log = ((t && t.log) || []).slice().reverse().map(l => '<li><span>' + fmtWaktu(l.at) + (l.by ? ' \u00b7 ' + esc(l.by) : '') + '</span>' + esc(l.text) + '</li>').join('') || '<li><span></span>Belum ada aktivitas tercatat.</li>';
     const nav = el.dataset.nav ? '<div class="is-nav"><button type="button" class="btn-ghost" data-isnav="-1" title="Issue sebelumnya (\u2190)">&lsaquo;</button><span>' + el.dataset.nav + '</span><button type="button" class="btn-ghost" data-isnav="1" title="Issue berikutnya (\u2192)">&rsaquo;</button></div>' : '';
     const autoV = (v, src, unit) => v ? v + (unit || '') + (src === 'api' ? ' <span class="is-hint">dari API</span>' : src === 'dwg' ? ' <span class="is-hint">dari gambar (lama)</span>' : src === 'forma' ? ' <span class="is-hint">dari Forma</span>' : '') : '<span class="ext-wait">menunggu data API</span>';
     const spkObj = it.spkId ? store.spks[it.spkId] : null;
@@ -7929,10 +7985,10 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       if (e.target.closest('[data-isclose]')) { onClose(); return; }
       const nv = e.target.closest('[data-isnav]'); if (nv) { isStep(parseInt(nv.dataset.isnav, 10)); return; }
       const zAfter = () => { isAfterChange(t); if (rs.tab === 'viewer') { rsDrawZones(); rsRenderPins(); } isRenderDetail(el, isItemFromApp(t), onClose); };
-      const zok = e.target.closest('[data-zok]'); if (zok) { const id = zoneJoin([t.id, zok.dataset.zok], t.ruas); pjToast('Ditandai berulang di zona ' + id + '.'); zAfter(); return; }
+      const zok = e.target.closest('[data-zok]'); if (zok) { const id = zoneJoin([t.id, zok.dataset.zok], t.ruas); if (!id) return; pjToast('Ditandai berulang di zona ' + id + '.'); zAfter(); return; }
       const zno = e.target.closest('[data-zno]'); if (zno) { const o = appIssues.list.find(x => x.id === zno.dataset.zno); if (o) zoneReject(t, o); zAfter(); return; }
       if (e.target.closest('[data-zleave]')) { uiConfirm('Lepas ' + t.code + ' dari zona ' + t.zone + '?', { ok: 'Lepas' }).then(ok => { if (ok) { zoneLeave(t); zAfter(); } }); return; }
-      if (e.target.closest('[data-zadd]')) { zonePicker(t).then(ids => { if (!ids) return; const id = zoneJoin([t.id].concat(ids), t.ruas); pjToast(ids.length + ' kerusakan ditandai berulang di zona ' + id + '.'); zAfter(); }); return; }
+      if (e.target.closest('[data-zadd]')) { zonePicker(t).then(ids => { if (!ids) return; const id = zoneJoin([t.id].concat(ids), t.ruas); if (!id) return; pjToast(ids.length + ' kerusakan ditandai berulang di zona ' + id + '.'); zAfter(); }); return; }
       const zg = e.target.closest('[data-zgo]'); if (zg && zg.dataset.zgo !== t.id) { const o = appIssues.list.find(x => x.id === zg.dataset.zgo); if (o) { if (el.id === 'rsSide') rsSelect(o.id); else isOpenById(o.id); } return; }
       const tb = e.target.closest('[data-istab]'); if (tb) { el.dataset.tab = tb.dataset.istab; isRenderDetail(el, it, onClose); return; }
       const ac = e.target.closest('[data-isact]');
@@ -7944,6 +8000,13 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     };
     el.onchange = async e => {
       if (e.target.dataset.isq === 'status' && t) {
+        const u = window.__drUser, mine = u && t.assignee && String(t.assignee).toLowerCase() === String(u.nama).toLowerCase();
+        const okStatus = window.drCan('issue.status.all') || (mine && window.drCan('issue.status.own'));
+        const wantClose = e.target.value === 'Closed';
+        if (!okStatus || (wantClose && !window.drCan('issue.close'))) {
+          e.target.value = t.status;
+          window.drGuard('__tidak__', wantClose && okStatus ? 'menutup (Close) issue' : 'mengubah status issue ini'); return;
+        }
         const old = t.status; t.status = e.target.value;
         if (t.status === 'Closed' && old !== 'Closed') t.closedAt = toISO(new Date());
         isLog(t, 'Status ' + old + ' \u2192 ' + t.status);
@@ -8015,6 +8078,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('isFPickBtn').disabled = !hasDwg; $('isFPickNote').hidden = hasDwg;
   }
   function isOpenForm(editId, focusKey, placement) {
+    if (!window.drGuard(editId ? 'issue.edit' : 'issue.create', editId ? 'mengedit issue' : 'membuat issue')) return;
     aiEnsure(); isFillSelects();
     const t = editId ? appIssues.list.find(x => x.id === editId) : null;
     isForm.editId = t ? t.id : null;
@@ -8092,7 +8156,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
       const host = isForm.host, rep = host && statusOfAi(host) === 'Closed';
       t = Object.assign({ id: 'ai' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ruas: rs.ruas, src: 'pin', active: true, num: isNextNum(rs.ruas),
         code: code, type: type, luas: 0, created: toISO(new Date()), note: '', repeat: !!rep, parentId: rep ? host.id : undefined,
-        log: [{ at: new Date().toISOString(), text: 'Issue dibuat' + (rep ? ' \u2014 kerusakan berulang di lokasi ' + host.code : '') }] }, data);
+        log: [Object.assign({ at: new Date().toISOString(), text: 'Issue dibuat' + (rep ? ' \u2014 kerusakan berulang di lokasi ' + host.code : '') }, window.__drUser ? { by: window.__drUser.nama } : {})] }, data);
       if (p) Object.assign(t, { x: p.x, y: p.y, fileId: p.fileId, fileV: p.fileV, firstV: p.fileV, lat: gps && gps.lat, lon: gps && gps.lon, centered: 1 }, p.poly ? { poly: p.poly } : {});
       if (rep) { host.nextId = t.id; isLog(host, 'Rusak lagi \u2192 ' + t.code); }
       if (data.status === 'Closed') t.closedAt = toISO(new Date());
@@ -8137,7 +8201,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     const s = isSettings(), list = path[0] === 't' ? s.types : s.roots, [ci, si] = path.slice(1).split('.').map(Number);
     const cat = list[ci]; return { cat: cat, item: si != null && !isNaN(si) ? (path[0] === 't' ? cat.subs[si] : cat.items[si]) : null, list: list };
   }
-  $('isSettingsBtn').addEventListener('click', () => { isRenderSettings(); setModal.hidden = false; });
+  $('isSettingsBtn').addEventListener('click', () => { if (!window.drGuard('settings.manage', 'mengubah Settings')) return; isRenderSettings(); setModal.hidden = false; });
   setModal.addEventListener('click', async e => {
     if (e.target === setModal || e.target.closest('[data-close]')) { setModal.hidden = true; if (rs.tab === 'issues') isRender(); return; }
     const tb = e.target.closest('#isSetTabs [data-st]'); if (tb) { setTab = tb.dataset.st; isRenderSettings(); return; }
@@ -8476,6 +8540,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   igModal.addEventListener('click', e => { if (e.target === igModal || e.target.closest('[data-close]')) igModal.hidden = true; });
   function igStatus(m, ok) { const el = $('igStatus'); el.className = 'ds-status ' + (ok ? 'ok' : 'err'); el.textContent = m; }
   function igOpen() {
+    if (!window.drGuard('integration.manage', 'mengatur integrasi API')) return;
     const c = igLoad();
     $('igIssueUrl').value = c.issueUrl || ''; $('igSpkUrl').value = c.spkUrl || ''; $('igToken').value = c.token || ''; $('igAuto').checked = !!c.auto;
     $('igStatus').textContent = '';
@@ -9090,6 +9155,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     return '<label class="demo-opt' + (disabled ? ' off' : '') + (danger ? ' danger' : '') + '"><input type="checkbox" id="' + id + '"' + (checked && !disabled ? ' checked' : '') + (disabled ? ' disabled' : '') + '><span><b>' + title + '</b><small>' + desc + '</small></span></label>';
   }
   function openModal() {
+    if (!window.drGuard('backup.manage', 'menghapus data')) return;
     const st = window.DR.status();
     const src = window.__DR_SOURCE;
     const nRows = ownRows().length;
@@ -9271,7 +9337,7 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
     $('bkDown').disabled = false; renderInfo();
   });
   $('bkFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await doRestore(f); });
-  function openBk() { $('bkStatus').textContent = ''; modal.hidden = false; renderInfo(); }
+  function openBk() { if (!window.drGuard('backup.manage', 'backup & restore')) return; $('bkStatus').textContent = ''; modal.hidden = false; renderInfo(); }
   window.openBackup = openBk;
   const ul = document.querySelector('#sidebarGroupData .sidebar-sublist');
   if (ul) {
@@ -9283,6 +9349,247 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   }
   // minta penyimpanan permanen diam-diam kalau sudah ada data milik pengguna
   try { if (navigator.storage && navigator.storage.persist && (window.DR && window.DR.storedCounts().appIssues)) navigator.storage.persist(); } catch (e) { /* abaikan */ }
+})();
+
+
+// ============================================================
+// LOGIN & PENGGUNA (mode server)
+// Aktif kalau "Server & login" dinyalakan, atau otomatis kalau aplikasi dibuka dari API (http://localhost:3000).
+// Selama mode server mati, aplikasi berjalan seperti biasa tanpa login.
+// ============================================================
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const CFG_KEY = 'damageRoad.server.v1', TOK_KEY = 'damageRoad.auth.v1';
+  const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') || d; } catch (e) { return d; } };
+  const save = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* abaikan */ } };
+  const servedByApi = location.protocol === 'http:' && /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port === '3000';
+  const cfg = load(CFG_KEY, {});
+  const serverOn = cfg.on === true || (cfg.on == null && servedByApi);
+  const apiBase = () => (cfg.url || (servedByApi ? location.origin : '')).replace(/\/+$/, '');
+  const ALL_PERMS = ['dashboard.view', 'report.download', 'issue.create', 'issue.attach', 'issue.edit', 'issue.status.own', 'issue.status.all', 'issue.close', 'issue.emergency', 'issue.delete',
+    'zone.manage', 'file.upload', 'file.delete', 'package.manage', 'package.approve.dept', 'package.approve.div', 'spk.manage', 'integration.manage', 'ruas.manage', 'settings.manage', 'backup.manage', 'user.manage'];
+
+  async function api(method, path, body) {
+    const tok = (load(TOK_KEY, {}) || {}).token;
+    let r;
+    try {
+      r = await fetch(apiBase() + path, { method: method, headers: Object.assign({ 'Content-Type': 'application/json' }, tok ? { Authorization: 'Bearer ' + tok } : {}), body: body ? JSON.stringify(body) : undefined });
+    } catch (e) { throw new Error('Tidak bisa menghubungi server API (' + (apiBase() || 'alamat belum diisi') + '). Pastikan API sudah dijalankan.'); }
+    let j = {}; try { j = await r.json(); } catch (e) { /* bukan JSON */ }
+    if (!r.ok) { const err = new Error(j.error || ('Server menjawab ' + r.status)); err.status = r.status; err.code = j.code; throw err; }
+    return j;
+  }
+  window.drApi = api;
+
+  // ---------- hak akses -> sembunyikan tombol yang tidak boleh dipakai ----------
+  function applyPerms(user) {
+    const have = new Set(user ? user.perms : ALL_PERMS);
+    ALL_PERMS.forEach(p => document.body.classList.toggle('np-' + p.replace(/\./g, '_'), !have.has(p)));
+    document.body.classList.toggle('dr-logged', !!user);
+  }
+
+  // ---------- layar login ----------
+  const ov = document.createElement('div');
+  ov.id = 'authOverlay'; ov.hidden = true;
+  ov.innerHTML = '<div class="au-card" role="dialog" aria-modal="true" aria-labelledby="auTitle">' +
+    '<div class="au-brand">' + ((document.querySelector('.brand-logo') || {}).outerHTML || '<b>DAMAGE ROAD</b>') + '</div>' +
+    '<h2 id="auTitle">Masuk</h2><p class="au-sub" id="auSub">Gunakan akun Damage Road-mu.</p>' +
+    '<form id="auForm" autocomplete="on" novalidate></form>' +
+    '<p class="au-err" id="auErr" role="alert"></p>' +
+    '<p class="au-foot">Server: <span id="auSrv"></span> \u00b7 <button type="button" class="link-cell" id="auSrvBtn">ubah</button></p></div>';
+  document.body.appendChild(ov);
+  let setupToken = null, pendingOld = '';
+  function showForm(kind, extra) {
+    ov.hidden = false; document.body.classList.add('dr-locked');
+    $('auErr').textContent = ''; $('auSrv').textContent = apiBase() || '(belum diisi)';
+    const f = $('auForm');
+    if (kind === 'login') {
+      $('auTitle').textContent = 'Masuk'; $('auSub').textContent = 'Gunakan akun Damage Road-mu.';
+      f.innerHTML = '<label>Username<input id="auUser" name="username" autocomplete="username" required></label>' +
+        '<label>Password<input id="auPass" name="password" type="password" autocomplete="current-password"></label>' +
+        '<button type="submit" class="upload-btn au-btn">Masuk</button>';
+      setTimeout(() => $('auUser').focus(), 30);
+    } else if (kind === 'setup') {
+      $('auTitle').textContent = 'Buat password'; $('auSub').innerHTML = 'Halo <b>' + esc(extra) + '</b>, akun ini belum punya password. Buat password baru (min. 8 karakter, berisi huruf dan angka).';
+      f.innerHTML = '<label>Password baru<input id="auNew" type="password" autocomplete="new-password"></label>' +
+        '<label>Ulangi password baru<input id="auNew2" type="password" autocomplete="new-password"></label>' +
+        '<button type="submit" class="upload-btn au-btn">Simpan password</button>';
+      setTimeout(() => $('auNew').focus(), 30);
+    } else if (kind === 'change') {
+      $('auTitle').textContent = 'Ganti password'; $('auSub').textContent = extra || 'Kamu masuk dengan password sementara. Buat password baru dulu (min. 8 karakter, berisi huruf dan angka).';
+      f.innerHTML = (pendingOld ? '' : '<label>Password lama<input id="auOld" type="password" autocomplete="current-password"></label>') +
+        '<label>Password baru<input id="auNew" type="password" autocomplete="new-password"></label>' +
+        '<label>Ulangi password baru<input id="auNew2" type="password" autocomplete="new-password"></label>' +
+        '<button type="submit" class="upload-btn au-btn">Simpan password</button>' + (extra ? '<button type="button" class="btn-ghost au-btn" id="auCancel">Batal</button>' : '');
+      setTimeout(() => ($('auOld') || $('auNew')).focus(), 30);
+      if ($('auCancel')) $('auCancel').onclick = () => { hide(); };
+    }
+    f.dataset.kind = kind;
+  }
+  function hide() { ov.hidden = true; document.body.classList.remove('dr-locked'); pendingOld = ''; }
+  function done(res) {
+    save(TOK_KEY, { token: res.token, at: Date.now() });
+    setUser(res.user);
+    if (res.user.wajibGantiPassword) { showForm('change'); return; }
+    hide();
+  }
+  $('auForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = $('auForm'), kind = f.dataset.kind, btn = f.querySelector('button[type=submit]'), err = $('auErr');
+    err.textContent = ''; btn.disabled = true;
+    try {
+      if (kind === 'login') {
+        const username = $('auUser').value.trim(), password = $('auPass').value;
+        if (!username) throw new Error('Username wajib diisi.');
+        const r = await api('POST', '/api/auth/login', { username: username, password: password });
+        if (r.needSetup) { setupToken = r.setupToken; showForm('setup', r.nama); return; }
+        pendingOld = password; done(r);
+      } else {
+        const n1 = $('auNew').value, n2 = $('auNew2').value;
+        if (n1 !== n2) throw new Error('Ulangi password tidak sama.');
+        if (kind === 'setup') done(await api('POST', '/api/auth/setup-password', { setupToken: setupToken, newPassword: n1 }));
+        else {
+          const r = await api('POST', '/api/auth/change-password', { oldPassword: pendingOld || $('auOld').value, newPassword: n1 });
+          save(TOK_KEY, { token: r.token, at: Date.now() }); setUser(r.user); hide();
+          if (window.pjToast) window.pjToast('Password berhasil diganti.');
+        }
+      }
+    } catch (ex) { err.textContent = ex.message; }
+    finally { btn.disabled = false; }
+  });
+  $('auSrvBtn').addEventListener('click', () => openServer());
+
+  // ---------- akun di sidebar ----------
+  const box = document.createElement('div');
+  box.className = 'sb-user'; box.id = 'sbUser'; box.hidden = true;
+  ($('appSidebar') || document.body).appendChild(box);
+  function setUser(u) {
+    window.__drUser = u; applyPerms(u);
+    box.hidden = !u;
+    if (!u) return;
+    box.innerHTML = '<div class="sb-u-who"><span class="sb-u-av">' + esc((u.nama || u.username).trim().charAt(0).toUpperCase()) + '</span><span><b>' + esc(u.nama) + '</b><small>' + esc((u.roleNames || u.roles).join(', ')) + '</small></span></div>' +
+      '<div class="sb-u-acts">' + (u.perms.includes('user.manage') ? '<button type="button" class="link-cell" id="sbUsers">Kelola pengguna</button>' : '') +
+      '<button type="button" class="link-cell" id="sbPass">Ganti password</button><button type="button" class="link-cell" id="sbOut">Keluar</button></div>';
+    if ($('sbUsers')) $('sbUsers').onclick = openUsers;
+    $('sbPass').onclick = () => { pendingOld = ''; showForm('change', 'Ganti password akunmu (min. 8 karakter, berisi huruf dan angka).'); };
+    $('sbOut').onclick = () => { save(TOK_KEY, null); setUser(null); showForm('login'); };
+  }
+
+  // ---------- pengaturan server ----------
+  const sm = document.createElement('div');
+  sm.className = 'v2-modal'; sm.id = 'srvModal'; sm.hidden = true;
+  sm.innerHTML = '<div class="v2-modal-box" role="dialog" aria-modal="true" aria-labelledby="srvTitle" style="width:560px;">' +
+    '<div class="v2-modal-head"><div><h3 id="srvTitle">Server &amp; login</h3><p class="sub" style="margin:2px 0 0;">Sambungkan aplikasi ke API Damage Road (database SQL Server). Kalau dinyalakan, semua orang harus login.</p></div>' +
+    '<button type="button" class="v2-close" data-close aria-label="Tutup">&times;</button></div>' +
+    '<div class="form-grid"><label class="span-2">Alamat API<input type="url" id="srvUrl" placeholder="http://localhost:3000" autocomplete="off"></label>' +
+    '<label class="span-2 ig-check"><input type="checkbox" id="srvOn"> Wajib login (mode server)</label></div>' +
+    '<div class="bk-acts"><button type="button" class="btn-ghost" id="srvTest">Tes koneksi</button><button type="button" class="upload-btn" id="srvSave">Simpan &amp; muat ulang</button></div>' +
+    '<p class="ds-status" id="srvStatus"></p>' +
+    '<p class="foot-note">Selama pengembangan, cara paling mudah: jalankan API di laptop lalu buka aplikasi di <b>http://localhost:3000</b>. Mode server otomatis aktif di alamat itu.</p>' +
+    '<div class="v2-modal-foot"><button type="button" class="btn-ghost" data-close>Tutup</button></div></div>';
+  document.body.appendChild(sm);
+  sm.addEventListener('click', e => { if (e.target === sm || e.target.closest('[data-close]')) sm.hidden = true; });
+  function openServer() {
+    $('srvUrl').value = cfg.url || (servedByApi ? location.origin : ''); $('srvOn').checked = serverOn; $('srvStatus').textContent = ''; sm.hidden = false;
+  }
+  window.openServerSettings = openServer;
+  $('srvTest').addEventListener('click', async () => {
+    const url = $('srvUrl').value.trim().replace(/\/+$/, ''), st = $('srvStatus');
+    st.className = 'ds-status ok'; st.textContent = 'Menghubungi ' + url + '\u2026';
+    try { const r = await fetch(url + '/api/health'); const j = await r.json(); if (!j.ok) throw new Error(j.error); st.textContent = 'Tersambung. Database: ' + j.database + '.'; }
+    catch (e) { st.className = 'ds-status err'; st.textContent = 'Gagal: ' + (e.message || e) + '. Pastikan API berjalan dan alamatnya benar.'; }
+  });
+  $('srvSave').addEventListener('click', () => {
+    const url = $('srvUrl').value.trim().replace(/\/+$/, ''), on = $('srvOn').checked;
+    if (on && !url && !servedByApi) { $('srvStatus').className = 'ds-status err'; $('srvStatus').textContent = 'Isi alamat API dulu.'; return; }
+    save(CFG_KEY, { url: url, on: on }); location.reload();
+  });
+  (function menu() {
+    const ul = document.querySelector('#sidebarGroupData .sidebar-sublist'); if (!ul) return;
+    const li = document.createElement('li');
+    li.innerHTML = '<button type="button" class="sidebar-link" id="srvOpenBtn">Server &amp; login</button>';
+    ul.appendChild(li); $('srvOpenBtn').addEventListener('click', openServer);
+  })();
+
+  // ---------- kelola pengguna (admin) ----------
+  const um = document.createElement('div');
+  um.className = 'v2-modal'; um.id = 'usersModal'; um.hidden = true;
+  um.innerHTML = '<div class="v2-modal-box" role="dialog" aria-modal="true" aria-labelledby="umTitle" style="width:900px;">' +
+    '<div class="v2-modal-head"><div><h3 id="umTitle">Kelola pengguna</h3><p class="sub" style="margin:2px 0 0;">Tambah akun, atur peran, nonaktifkan, atau buat password sementara. Pengguna wajib mengganti password sementara saat login pertama.</p></div>' +
+    '<button type="button" class="v2-close" data-close aria-label="Tutup">&times;</button></div>' +
+    '<div class="bk-acts" style="margin-top:0"><button type="button" class="upload-btn" id="umAdd">+ Tambah pengguna</button></div>' +
+    '<div id="umForm" class="um-form" hidden></div>' +
+    '<div style="overflow-x:auto;"><table class="um-table"><thead><tr><th>Nama</th><th>Username</th><th>Peran</th><th>Status</th><th>Login terakhir</th><th></th></tr></thead><tbody id="umBody"></tbody></table></div>' +
+    '<p class="ds-status" id="umStatus"></p>' +
+    '<div class="v2-modal-foot"><button type="button" class="btn-ghost" data-close>Tutup</button></div></div>';
+  document.body.appendChild(um);
+  um.addEventListener('click', e => { if (e.target === um || e.target.closest('[data-close]')) um.hidden = true; });
+  let roles = [], users = [];
+  const fmtT = s => { if (!s) return '\u2013'; const d = new Date(s); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); };
+  async function openUsers() {
+    um.hidden = false; $('umForm').hidden = true; $('umStatus').textContent = '';
+    try { roles = (await api('GET', '/api/roles')).roles; await loadUsers(); }
+    catch (e) { $('umStatus').className = 'ds-status err'; $('umStatus').textContent = e.message; }
+  }
+  window.openUsers = openUsers;
+  async function loadUsers() {
+    users = (await api('GET', '/api/users')).users;
+    const rn = k => (roles.find(r => r.Kode === k) || {}).Nama || k;
+    $('umBody').innerHTML = users.map(u => {
+      const locked = u.TerkunciSampai && new Date(u.TerkunciSampai) > new Date();
+      const st = !u.Aktif ? '<span class="um-st off">Nonaktif</span>' : locked ? '<span class="um-st warn">Terkunci</span>' : !u.PunyaPassword ? '<span class="um-st warn">Belum ada password</span>' : u.WajibGantiPassword ? '<span class="um-st warn">Belum ganti password</span>' : '<span class="um-st ok">Aktif</span>';
+      return '<tr><td><b>' + esc(u.NamaLengkap) + '</b>' + (u.Company ? '<br><small>' + esc(u.Company) + '</small>' : '') + '</td><td>' + esc(u.Username) + '</td><td>' + u.Peran.map(k => '<span class="um-role">' + esc(rn(k)) + '</span>').join(' ') + '</td><td>' + st + '</td><td>' + fmtT(u.LoginTerakhir) + '</td>' +
+        '<td style="white-space:nowrap"><button type="button" class="btn-ghost" data-umedit="' + u.PenggunaId + '">Edit</button> <button type="button" class="btn-ghost" data-umreset="' + u.PenggunaId + '">Reset password</button></td></tr>';
+    }).join('');
+  }
+  function renderForm(u) {
+    const f = $('umForm'); f.hidden = false;
+    f.innerHTML = '<h4>' + (u ? 'Edit ' + esc(u.NamaLengkap) : 'Pengguna baru') + '</h4><div class="form-grid">' +
+      (u ? '' : '<label>Username<input id="umUser" placeholder="mis. budi.santoso" autocomplete="off"></label>') +
+      '<label>Nama lengkap<input id="umNama" value="' + esc(u ? u.NamaLengkap : '') + '"></label>' +
+      '<label>Email<input id="umEmail" type="email" value="' + esc(u ? u.Email || '' : '') + '"></label>' +
+      '<label>Company<input id="umComp" value="' + esc(u ? u.Company || '' : '') + '" placeholder="mis. BSD TM"></label>' +
+      (u ? '<label class="ig-check"><input type="checkbox" id="umAktif"' + (u.Aktif ? ' checked' : '') + '> Akun aktif</label>' : '') +
+      '<div class="span-2"><span class="um-lbl">Peran</span><div class="um-roles">' + roles.map(r => '<label class="um-rc"><input type="checkbox" value="' + esc(r.Kode) + '"' + (u && u.Peran.includes(r.Kode) ? ' checked' : '') + '><span><b>' + esc(r.Nama) + '</b><small>' + esc(r.Keterangan || '') + '</small></span></label>').join('') + '</div></div></div>' +
+      '<div class="bk-acts"><button type="button" class="upload-btn" id="umSave">' + (u ? 'Simpan perubahan' : 'Buat pengguna') + '</button><button type="button" class="btn-ghost" id="umCancel">Batal</button></div>';
+    $('umCancel').onclick = () => { f.hidden = true; };
+    $('umSave').onclick = async () => {
+      const body = { nama: $('umNama').value.trim(), email: $('umEmail').value.trim(), company: $('umComp').value.trim(), roles: Array.from(f.querySelectorAll('.um-roles input:checked')).map(i => i.value) };
+      const st = $('umStatus');
+      try {
+        if (u) { body.aktif = $('umAktif').checked; await api('PUT', '/api/users/' + u.PenggunaId, body); st.className = 'ds-status ok'; st.textContent = 'Perubahan disimpan.'; }
+        else {
+          body.username = $('umUser').value.trim().toLowerCase();
+          const r = await api('POST', '/api/users', body);
+          uiAlert('Pengguna "' + body.username + '" dibuat.\n\nPassword sementara: ' + r.tempPassword + '\n\nBerikan ke yang bersangkutan. Password ini wajib diganti saat login pertama dan tidak bisa dilihat lagi setelah jendela ini ditutup.', { ok: 'Sudah dicatat' });
+          st.className = 'ds-status ok'; st.textContent = 'Pengguna dibuat.';
+        }
+        f.hidden = true; await loadUsers();
+      } catch (e) { st.className = 'ds-status err'; st.textContent = e.message; }
+    };
+  }
+  $('umAdd').addEventListener('click', () => renderForm(null));
+  $('umBody').addEventListener('click', async e => {
+    const ed = e.target.closest('[data-umedit]'); if (ed) { renderForm(users.find(u => u.PenggunaId === +ed.dataset.umedit)); return; }
+    const rs = e.target.closest('[data-umreset]'); if (!rs) return;
+    const u = users.find(x => x.PenggunaId === +rs.dataset.umreset);
+    if (!(await uiConfirm('Buat password sementara baru untuk ' + u.NamaLengkap + '? Password lamanya tidak berlaku lagi, dan akunnya dibuka kalau sedang terkunci.', { ok: 'Buat password sementara' }))) return;
+    try { const r = await api('POST', '/api/users/' + u.PenggunaId + '/reset-password'); uiAlert('Password sementara untuk ' + u.Username + ': ' + r.tempPassword + '\n\nWajib diganti saat login berikutnya.', { ok: 'Sudah dicatat' }); await loadUsers(); }
+    catch (ex) { $('umStatus').className = 'ds-status err'; $('umStatus').textContent = ex.message; }
+  });
+
+  // ---------- mulai ----------
+  applyPerms(null);
+  if (!serverOn) return;
+  document.body.classList.add('dr-server');
+  showForm('login');
+  const t = load(TOK_KEY, null);
+  if (t && t.token) {
+    api('GET', '/api/auth/me').then(r => { if (r.user.wajibGantiPassword) { setUser(r.user); showForm('change'); } else { setUser(r.user); hide(); } })
+      .catch(() => { save(TOK_KEY, null); showForm('login'); });
+  }
 })();
 
 </script>
