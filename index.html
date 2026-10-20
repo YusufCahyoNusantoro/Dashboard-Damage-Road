@@ -9361,6 +9361,12 @@ document.querySelectorAll('.link[data-target]').forEach(link => {
   'use strict';
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // ------------------------------------------------------------------
+  // SAKLAR FITUR LOGIN. Sementara DIMATIKAN (disembunyikan) atas permintaan.
+  // Untuk menyalakan lagi: ubah false -> true. Semua kode login tetap ada di bawah.
+  // ------------------------------------------------------------------
+  const LOGIN_AKTIF = false;
+  if (!LOGIN_AKTIF) { window.__drUser = null; return; }
   const CFG_KEY = 'damageRoad.server.v1', TOK_KEY = 'damageRoad.auth.v1';
   const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') || d; } catch (e) { return d; } };
   const save = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* abaikan */ } };
